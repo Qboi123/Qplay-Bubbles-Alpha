@@ -40,7 +40,7 @@ import os
 from time import gmtime, strftime
 
 # from block import Block
-from player import Player
+from sprites.player import Player
 from map import World
 
 

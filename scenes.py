@@ -2,6 +2,8 @@ import json
 import math
 import random
 import time
+from typing import List
+
 import pyglet
 
 from collections import deque
@@ -10,7 +12,10 @@ from pyglet.gl import *
 from pyglet.media import Player as MediaPlayer
 from pyglet.window import key, mouse, Window
 from pyglet.sprite import Sprite
-from pyglet.graphics import OrderedGroup
+from pyglet.graphics import OrderedGroup, Batch
+
+from sprites.objects import PhysicalObject
+from sprites.player import Player
 
 
 class AudioEngine:
@@ -74,16 +79,68 @@ class Scene:
         raise NotImplementedError
 
 
+# noinspection PyUnusedFunction
 class GameScene(Scene):
     def __init__(self, window):
         Scene.__init__(self)
-        self.window = window
+        self.window: pyglet.window.Window = window
+        self.batch: pyglet.graphics.Batch = pyglet.graphics.Batch()
+        self.player: Player = Player((self.window.height/2, self.window.width/2), self.batch)
+        self.game_objects: List[PhysicalObject] = list()
+
+        # Define local player variables
+        self.player_rot_strafe = 0
+        self.player_mpx_strafe = 0
 
     def on_draw(self):
         self.window.clear()
+        self.batch.draw()
+        self.player.draw()
+
+    def on_key_press(self, symbol, modifiers):
+        if symbol == key.LEFT:
+            self.player_rot_strafe -= 5
+        if symbol == key.RIGHT:
+            self.player_rot_strafe += 5
+
+        if symbol == key.DOWN:
+            self.player_mpx_strafe += 5
+        if symbol == key.UP:
+            self.player_mpx_strafe -= 5
+
+    def on_key_release(self, symbol, modifiers):
+        if symbol == key.LEFT:
+            self.player_rot_strafe += 5
+        if symbol == key.RIGHT:
+            self.player_rot_strafe -= 5
+
+        if symbol == key.DOWN:
+            self.player_mpx_strafe -= 5
+        if symbol == key.UP:
+            self.player_mpx_strafe += 5
 
     def update(self, dt):
-        pass
+        if self.player_rot_strafe:
+            self.player.rotate(self.player_rot_strafe)
+            # self.player_rot_strafe = 0
+
+        if self.player_mpx_strafe:
+            self.player.move_pixels(dt, self.player_mpx_strafe)
+            # self.player_mpx_strafe = 0
+
+        # To avoid handling collisions twice, we employ nested loops of ranges.
+        # This method also avoids the problem of colliding an object with itself.
+        for i in range(len(self.game_objects)):
+            for j in range(i + 1, len(self.game_objects)):
+
+                obj_1 = self.game_objects[i]
+                obj_2 = self.game_objects[j]
+
+                # Make sure the objects haven't already been killed
+                if not obj_1.dead and not obj_2.dead:
+                    if obj_1.collides_with(obj_2):
+                        obj_1.handle_collision_with(obj_2)
+                        obj_2.handle_collision_with(obj_1)
 
     def tick_update(self, dt):
         pass

@@ -1,9 +1,5 @@
-import os
-from PIL import Image
-
-import pyglet
-
-import image
+import pyglet as _pyglet
+from typing import Dict as _Dict
 
 
 def center_image(image):
@@ -13,8 +9,7 @@ def center_image(image):
 
 
 def get_bubble_images():
-    """generate and get bubble images
-
+    """Generate and get bubble images
 
     :return:
     """
@@ -43,6 +38,7 @@ def get_bubble_images():
     bub["Key"] = dict()
     bub["Diamond"] = dict()
     bub["Present"] = dict()
+    bub["Coin"] = dict()
     bub["SpecialKey"] = dict()
 
     # Import utils, for creating bubble in dynamic resolution
@@ -74,20 +70,49 @@ def get_bubble_images():
         bub["StoneBub"][i] = utils.createbubble_image((i, i), None, "black", "orange", "yellow")
         bub["NoTouch"][i] = utils.createbubble_image((i, i), None, "#7f7f7f", "#7f7f7f", "#7f7f7f", "#373737")
 
+        center_image(bub["Normal"][i])
+        center_image(bub["Double"][i])
+        center_image(bub["Triple"][i])
+        center_image(bub["SpeedDown"][i])
+        center_image(bub["SpeedUp"][i])
+        center_image(bub["Up"][i])
+        center_image(bub["Ultimate"][i])
+        center_image(bub["Kill"][i])
+        center_image(bub["Teleporter"][i])
+        center_image(bub["SlowMotion"][i])
+        center_image(bub["DoubleState"][i])
+        center_image(bub["Protect"][i])
+        center_image(bub["ShotSpdStat"][i])
+        center_image(bub["HyperMode"][i])
+        center_image(bub["TimeBreak"][i])
+        center_image(bub["Confusion"][i])
+        center_image(bub["Paralis"][i])
+        center_image(bub["StoneBub"][i])
+        center_image(bub["NoTouch"][i])
+
     # Adding the static-resolution-bubbles.
-    bub["Key"][60] = pyglet.resource.image(name="bubbles/key.png")
-    bub["Diamond"][36] = pyglet.resource.image(name="bubbles/diamond.png")
-    bub["Present"][40] = pyglet.resource.image(name="bubbles/present.png")
-    # noinspection PyTypeChecker
-    bub["Coin"] = pyglet.resource.image(name="bubbles/coin.png")
-    bub["SpecialKey"][48] = pyglet.resource.image(name="bubbles/special_mode.png")
+    bub["Key"][60] = _pyglet.resource.image(name="bubbles/key.png")
+    bub["Diamond"][36] = _pyglet.resource.image(name="bubbles/diamond.png")
+    bub["Present"][40] = _pyglet.resource.image(name="bubbles/present.png")
+    bub["Coin"][42] = _pyglet.resource.image(name="bubbles/coin.png")
+    bub["SpecialKey"][48] = _pyglet.resource.image(name="bubbles/special_mode.png")
+
+    center_image(bub["Key"][60])
+    center_image(bub["Diamond"][36])
+    center_image(bub["Present"][40])
+    center_image(bub["Coin"][42])
+    center_image(bub["SpecialKey"][48])
     return bub
 
 
 # Index assets, and generate bubble images for all sizes.
 # NOTE: The bubbles have dynamic size!
-pyglet.resource.path = ['./assets']
-pyglet.resource.reindex()
+_pyglet.resource.path = ['./assets']
+_pyglet.resource.reindex()
 
-get_bubble_images()
+# Bubble images
+bubbles: _Dict[str, _Dict[int, _pyglet.image.AbstractImage]] = get_bubble_images()
 
+# Player image
+player: _pyglet.image.AbstractImage = _pyglet.resource.image(name="sprites/player.png")
+center_image(player)

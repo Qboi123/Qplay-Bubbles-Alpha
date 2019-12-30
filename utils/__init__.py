@@ -5,6 +5,17 @@ from typing import Tuple
 UPDATE_INTERVAL = 60
 TICKS_PER_SEC = 5
 
+PLAYER_SPEED = 2
+
+HORIZONTAL = "horizontal"
+VERTICAL = "vertical"
+EAST = "east"
+WEST = "west"
+NORTH = "north"
+SOUTH = "south"
+TRUE = True
+FALSE = False
+
 
 def version2name(version: Tuple[str, int, int, int]):  #releasetype: str, a: int, b: int, c: int=0):
     rt: str = version[0]
@@ -96,4 +107,10 @@ def createbubble_image(size, fp2png=None, *colors):
 
 def pillow2pyglet(im: Image.Image):
     raw_image = im.tobytes()  # tostring is deprecated
-    image = pyglet.image.ImageData(im.width, im.height, 'RGBA', raw_image, pitch=-im.width * 4)
+    image: pyglet.image.ImageData = pyglet.image.ImageData(im.width, im.height, 'RGBA', raw_image, pitch=-im.width * 4)
+    return image
+
+
+def distance(point_1=(0, 0), point_2=(0, 0)):
+    """Returns the distance between two points"""
+    return math.sqrt((point_1[0] - point_2[0]) ** 2 + (point_1[1] - point_2[1]) ** 2)
