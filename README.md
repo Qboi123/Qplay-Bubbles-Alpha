@@ -36,5 +36,5 @@ YouTube: [Qboi123](https://www.youtube.com/channel/UCQc1sn7jOLyP1fgmWW65lYw)
 ## Old repositories and sources
 I found [this](https://stackoverflow.com/questions/38897822/trouble-with-bubble-blaster-python-code) page when i was searching, to solve a problem. The code was of a book I got.  
 
-##Credits
+##Credits  
 For the sound effects and music: Royalty free music from https://www.fesliyanstudios.com  
