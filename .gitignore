@@ -7,3 +7,9 @@
 *.iml
 out
 gen
+*.pyc
+/__pycache__/
+/temp/
+/bin/
+/obj/
+/venv/
