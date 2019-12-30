@@ -1,4 +1,4 @@
-#Qplay Bubbles - Alpha
+# Qplay Bubbles - Alpha
 Qplay Bubbles (also known as [Bubble Blaster](https://stackoverflow.com/questions/38897822/trouble-with-bubble-blaster-python-code)), the advanced way.  
 
 ## Download and running from source
