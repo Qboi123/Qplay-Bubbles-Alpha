@@ -1,10 +1,10 @@
 #Qplay Bubbles - Alpha
 Qplay Bubbles (also known as [Bubble Blaster](https://stackoverflow.com/questions/38897822/trouble-with-bubble-blaster-python-code)), the advanced way.  
 
-## Download and running from source
+## Download and running
 > Note: You need Anaconda to run it. Because the standard Python have issues with Pillow.
 > For Unix users: you need a desktop to run the game, CLI is incompatible.  
-> For Mac users: It's possible that the game is not working on 64-bit mode.
+> For Mac users: It's possible that the game is not working on 64-bit mode.  
 > For Windows users: There is probably no problem with running it. (only errors I make by myself)
 
 Method 1: (Using an IDE)
@@ -36,5 +36,5 @@ YouTube: [Qboi123](https://www.youtube.com/channel/UCQc1sn7jOLyP1fgmWW65lYw)
 ## Old repositories and sources
 I found [this](https://stackoverflow.com/questions/38897822/trouble-with-bubble-blaster-python-code) page when i was searching, to solve a problem. The code was of a book I got.  
 
-##Credits  
+## Credits  
 For the sound effects and music: Royalty free music from https://www.fesliyanstudios.com  
