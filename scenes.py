@@ -104,9 +104,9 @@ class GameScene(Scene):
             self.player_rot_strafe += 5
 
         if symbol == key.DOWN:
-            self.player_mpx_strafe += 5
+            self.player_mpx_strafe += 10
         if symbol == key.UP:
-            self.player_mpx_strafe -= 5
+            self.player_mpx_strafe -= 10
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.LEFT:
@@ -115,9 +115,9 @@ class GameScene(Scene):
             self.player_rot_strafe -= 5
 
         if symbol == key.DOWN:
-            self.player_mpx_strafe -= 5
+            self.player_mpx_strafe -= 10
         if symbol == key.UP:
-            self.player_mpx_strafe += 5
+            self.player_mpx_strafe += 10
 
     def update(self, dt):
         if self.player_rot_strafe:

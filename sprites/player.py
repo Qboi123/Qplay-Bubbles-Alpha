@@ -20,7 +20,7 @@ class Player(PhysicalObject):
 
     def rotate(self, degrees):
         # print(self.sprite.rotation)
-        super(PhysicalObject, self).update(rotation = self.rotation - 90)
+        super(PhysicalObject, self).update(rotation = self.rotation + degrees)
 
     def draw(self):
         # super(PhysicalObject, self).update(self.position.x, self.position.y, self.rotation - 90, 1.2)
@@ -32,7 +32,7 @@ class Player(PhysicalObject):
 
         d = dt * pixels  # distance covered this tick.
         # strafe = math.degrees(math.atan(pixels))
-        angle_radians = -math.radians(-(self.rotation - 90))
+        angle_radians = -math.radians(-(self.rotation))
         dx = -math.cos(angle_radians)
         dy = math.sin(angle_radians)
         # dx = math.sin(x_angle)
@@ -41,3 +41,4 @@ class Player(PhysicalObject):
         dx, dy = dx * d * 10, dy * d * 10
 
         self.__position += (dx, dy)
+        super(PhysicalObject, self).update(x=self.__position.x, y=self.__position.y)
