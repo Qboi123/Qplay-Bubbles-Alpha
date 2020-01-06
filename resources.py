@@ -115,4 +115,6 @@ bubbles: _Dict[str, _Dict[int, _pyglet.image.AbstractImage]] = get_bubble_images
 
 # Player image
 player: _pyglet.image.AbstractImage = _pyglet.resource.image(name="sprites/player.png")
+print(player.__dict__)
+print(player.__repr__())
 center_image(player)

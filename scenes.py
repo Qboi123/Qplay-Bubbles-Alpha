@@ -1,19 +1,12 @@
-import json
-import math
-import random
-import time
+from collections import deque
 from typing import List
 
 import pyglet
-
-from collections import deque
-
 from pyglet.gl import *
 from pyglet.media import Player as MediaPlayer
-from pyglet.window import key, mouse, Window
-from pyglet.sprite import Sprite
-from pyglet.graphics import OrderedGroup, Batch
+from pyglet.window import key
 
+from map import Map
 from sprites.objects import PhysicalObject
 from sprites.player import Player
 
@@ -87,15 +80,20 @@ class GameScene(Scene):
         self.batch: pyglet.graphics.Batch = pyglet.graphics.Batch()
         self.player: Player = Player((self.window.height/2, self.window.width/2), self.batch)
         self.game_objects: List[PhysicalObject] = list()
+        self.map: Map = Map()
 
         # Define local player variables
         self.player_rot_strafe = 0
         self.player_mpx_strafe = 0
 
     def on_draw(self):
-        self.window.clear()
-        self.batch.draw()
-        self.player.draw()
+        try:
+            self.window.clear()
+            self.batch.draw()
+            self.player.draw()
+            self.map.draw()
+        except Exception as e:
+            print("%s: %s" % (str(e.__repr__()), str(e.args[0])))
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.LEFT:
@@ -142,5 +140,7 @@ class GameScene(Scene):
                         obj_1.handle_collision_with(obj_2)
                         obj_2.handle_collision_with(obj_1)
 
+        self.map.update(dt)
+
     def tick_update(self, dt):
-        pass
+        self.map.tick_update(dt, self.window, self.batch)

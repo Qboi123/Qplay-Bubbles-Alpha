@@ -1,6 +1,19 @@
+import io
+import math
+import os
+# from os import tmpfile
+import tempfile
+
+import PIL
 import pyglet
-from PIL import Image, ImageDraw, ImageTk
+from PIL import Image, ImageDraw, ImageTk, PngImagePlugin, _imaging
 from typing import Tuple
+
+from pyglet.image import Texture
+from pyglet.image.codecs.bmp import BMPImageDecoder
+from pyglet.image.codecs.pil import PILImageDecoder
+from pyglet.image.codecs.png import PNGImageDecoder
+from pygments import BytesIO
 
 UPDATE_INTERVAL = 60
 TICKS_PER_SEC = 5
@@ -15,6 +28,11 @@ NORTH = "north"
 SOUTH = "south"
 TRUE = True
 FALSE = False
+
+
+def randint_lookup(value_in, min_, max_):
+    value_in2 = (value_in + 2) / 2
+    return int(round(value_in2 * (max_ - min_) + min_))
 
 
 def version2name(version: Tuple[str, int, int, int]):  #releasetype: str, a: int, b: int, c: int=0):
@@ -106,8 +124,25 @@ def createbubble_image(size, fp2png=None, *colors):
 
 
 def pillow2pyglet(im: Image.Image):
-    raw_image = im.tobytes()  # tostring is deprecated
-    image: pyglet.image.ImageData = pyglet.image.ImageData(im.width, im.height, 'RGBA', raw_image, pitch=-im.width * 4)
+    raw_image = BytesIO()  # tostring is deprecated
+    if not os.path.exists("assets/temp"):
+        os.makedirs("assets/temp")
+
+    from PIL import _imaging
+
+    # _imaging.
+
+    file = tempfile.TemporaryFile("w+", suffix=".png", dir=os.path.abspath("assets/temp"), delete=False)
+    file.close()
+
+    pyglet.resource.reindex()
+    im.save(file.name)
+    # file.name
+
+    # image: pyglet.image.ImageData = pyglet.image.ImageData(im.width, im.height, 'RGBA', raw_image, pitch=-im.width * 4)
+    image = pyglet.resource.image(os.path.join("temp", os.path.split(file.name)[-1]).replace("\\", "/"))
+    # pyglet.image.TextureRegion()
+    os.remove(file.name)
     return image
 
 

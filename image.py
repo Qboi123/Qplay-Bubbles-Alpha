@@ -1,5 +1,6 @@
 import pyglet
 import PIL
+from pyglet.gl import glTexParameterf
 
 
 def get_texture_by_file(file):

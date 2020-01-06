@@ -13,14 +13,14 @@ class Player(PhysicalObject):
         super(Player, self).__init__(img=resources.player, batch=batch)
 
         self.rotation = 0
-        self.sprite: pyglet.sprite.Sprite = pyglet.sprite.Sprite(resources.player, batch=batch)
-        self.sprite.position = pos
+        # self.sprite: pyglet.sprite.Sprite = pyglet.sprite.Sprite(resources.player, batch=batch)
+        # self.sprite.position = pos
 
         self.__position: Position2D = Position2D(pos)
 
     def rotate(self, degrees):
         # print(self.sprite.rotation)
-        super(PhysicalObject, self).update(rotation = self.rotation + degrees)
+        super(PhysicalObject, self).update(rotation=self.rotation + degrees)
 
     def draw(self):
         # super(PhysicalObject, self).update(self.position.x, self.position.y, self.rotation - 90, 1.2)

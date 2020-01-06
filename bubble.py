@@ -1,13 +1,14 @@
 import pyglet
 
 from utils import EAST, WEST, NORTH, SOUTH
+from utils.classes import Position2D
 
 
 class Bubble(object):
     speed: int = 0
     direction: str = WEST
 
-    def __init__(self, parent, x, y, batch, size, bub_resource):
+    def __init__(self, x, y, batch, size, bub_resource):
         parent: Bubble
 
         if size:
@@ -16,23 +17,36 @@ class Bubble(object):
             smallest = min(list(bub_resource.keys()))
             size = smallest
         image = bub_resource[size]
-        self.parent = parent
+        print(image, x, y, batch)
+        self.direction = WEST
+        self.__position: Position2D = Position2D((x, y))
         self.sprite: pyglet.sprite.Sprite = pyglet.sprite.Sprite(img=image,
                                             x=x, y=y, batch=batch)
-        self.parent.sprite = self.sprite
-        if hasattr(parent, "parent"):
-            del self.parent.parent
+
+    def draw(self):
+        self.sprite.update(self.sprite.x, self.sprite.y, self.sprite.rotation, self.sprite.scale,
+                           self.sprite.scale_x, self.sprite.scale_y)
+        print("Draw")
 
     def update(self, dt):
-        x, y = self.parent.sprite.position
+        # dx, dy = self.sprite.position
 
-        if self.parent.direction == WEST:
-            x -= self.parent.speed
-        if self.parent.direction == EAST:
-            x += self.parent.speed
-        if self.parent.direction == NORTH:
-            y += self.parent.speed
-        if self.parent.direction == SOUTH:
-            y -= self.parent.speed
+        if self.direction == WEST:
+            dx = self.speed
+        if self.direction == EAST:
+            dx = self.speed
+        if self.direction == NORTH:
+            dy = self.speed
+        if self.direction == SOUTH:
+            dy = self.speed
 
-        self.parent.sprite.position = (x, y)
+        dx = -self.speed
+        dy = 0
+
+        print(self.direction)
+
+        # self.sprite.position = (x * dt, y * dt)
+        # noinspection PyUnboundLocalVariable
+        self.__position += (dx * dt, dy * dt)
+        self.sprite.update(x=self.__position.x, y=self.__position.y)
+        print("Update")

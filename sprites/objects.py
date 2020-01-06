@@ -25,6 +25,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
         # Only applies to things with keyboard/mouse input
         self.event_handlers = []
 
+    # noinspection PyMethodOverriding
     def update(self, dt):
         """This method should be called every frame."""
 

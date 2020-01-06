@@ -41,7 +41,7 @@ from time import gmtime, strftime
 
 # from block import Block
 from sprites.player import Player
-from map import World
+from map import Map
 
 
 class SaveManager(object):
@@ -101,7 +101,7 @@ class SaveManager(object):
             self.timestamp_print(e.__class__.__name__+": "+e.args[0])
             return False
 
-    def save_world(self, world: World, player: Player):
+    def save_world(self, world: Map, player: Player):
         save_file = self.save_file.format(self.save_slot)
         save_file_path = os.path.join(self.save_path, save_file)
         self.timestamp_print('start saving...')
