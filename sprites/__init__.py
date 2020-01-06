@@ -1,7 +1,7 @@
 from typing import List
 
-from bubble import Bubble
+from bubble import BubbleObject
 from sprites.bubbles import NormalBubble
 
-BUBBLES: List[Bubble] = []
-BUBBLES.append(NormalBubble)
+BUBBLES: List[BubbleObject] = []
+BUBBLES.append(NormalBubble())

@@ -25,8 +25,8 @@ class PhysicalObject(pyglet.sprite.Sprite):
         # Only applies to things with keyboard/mouse input
         self.event_handlers = []
 
-    # noinspection PyMethodOverriding
-    def update(self, dt):
+    # noinspection PyMethodOverriding,PyUnusedFunction
+    def refresh(self, dt):
         """This method should be called every frame."""
 
         # Update position according to velocity and time
@@ -63,10 +63,10 @@ class PhysicalObject(pyglet.sprite.Sprite):
         # Calculate distance between object centers that would be a collision,
         # assuming square resources
         collision_distance = self.image.width * 0.5 * self.scale \
-                             + other_object.image.width * 0.5 * other_object.scale
+                             + other_object.sprite.image.width * 0.5 * other_object.sprite.scale
 
         # Get distance using position tuples
-        actual_distance = utils.distance(self.position, other_object.position)
+        actual_distance = utils.distance(self.position, other_object.sprite.position)
 
         return (actual_distance <= collision_distance)
 

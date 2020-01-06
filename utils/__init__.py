@@ -1,3 +1,5 @@
+import sys
+
 import io
 import math
 import os
@@ -13,7 +15,7 @@ from pyglet.image import Texture
 from pyglet.image.codecs.bmp import BMPImageDecoder
 from pyglet.image.codecs.pil import PILImageDecoder
 from pyglet.image.codecs.png import PNGImageDecoder
-from pygments import BytesIO
+from io import BytesIO
 
 UPDATE_INTERVAL = 60
 TICKS_PER_SEC = 5
@@ -31,7 +33,9 @@ FALSE = False
 
 
 def randint_lookup(value_in, min_, max_):
-    value_in2 = (value_in + 2) / 2
+    value_in2 = (value_in / 2) + 0.5
+    sys.stderr.write(value_in2)
+    # value_in2 = value_in
     return int(round(value_in2 * (max_ - min_) + min_))
 
 

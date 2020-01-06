@@ -30,6 +30,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from pyglet.graphics import Batch
 from typing import Dict, Tuple, Union
 
 import pyglet
@@ -37,16 +38,19 @@ import pickle
 import json
 import os
 
+import globals as g
+
 from time import gmtime, strftime
 
 # from block import Block
+from bubble import BubbleObject
 from sprites.player import Player
 from map import Map
 
 
 class SaveManager(object):
     def __init__(self):
-        """SaveManager handles saving/loading of worlds and options.
+        """SaveManager handles saving/loading of saves and options.
 
         An internal dictionary (self._data) holds persistent data
         such as options, inventory, etc. To make accessing this easier,
@@ -56,7 +60,7 @@ class SaveManager(object):
 
         # Get the appropriate OS specific save path:
         self.save_path = pyglet.resource.get_settings_path('Infinicraft')
-        self.save_file = 'saveworld{}.dat'
+        self.save_file = 'save{}.dat'
         self.config_file = 'config.json'
         self.save_slot = 0
 
@@ -73,26 +77,26 @@ class SaveManager(object):
         save_file = self.save_file.format(self.save_slot)
         return os.path.exists(os.path.join(self.save_path, save_file))
 
-    def load_world(self, world, player: Player):
+    def load_save(self, map_: Map, player: Player, batch: Batch):
         save_file = self.save_file.format(self.save_slot)
         save_file_path = os.path.join(self.save_path, save_file)
         self.timestamp_print('start loading...')
 
         try:
             with open(save_file_path, 'rb') as file:
-                loaded_world: Dict[str, Union[Player, Dict[Tuple[int, int, int], Bubble]]] = pickle.load(file)
+                loaded_save: Dict[str, Union[Player, Dict[Tuple[int, int], BubbleObject]]] = pickle.load(file)
 
-            for position, block in loaded_world["world"].items():
-                if block.name == "dirt_with_grass":
-                    world.add_block(position, block, immediate=True)
+            for position, bubble in loaded_save["save"].items():
+                if bubble.name == "normal_bubble":
+                    map_.create_bubble(position[0], position[1], g.NAME2BUBBLE[bubble.name], batch, bubble.size)
                 else:
-                    world.add_block(position, block, immediate=False)
+                    map_.add_block(position, bubble, immediate=False)
 
-            x, y, z = loaded_world["player"].get_position()
+            x, y = loaded_save["player"].player_position
 
-            player.set_flight(loaded_world["player"].flying)
-            player.set_position((x, y+2, z))
-            player.rotation = loaded_world["player"].rotation
+            # player.set_flight(loaded_save["player"].flying)
+            player.player_position = (x, y + 2)
+            player.rotation = loaded_save["player"].rotation
 
             self.timestamp_print('Loading completed.')
             return True
@@ -101,7 +105,7 @@ class SaveManager(object):
             self.timestamp_print(e.__class__.__name__+": "+e.args[0])
             return False
 
-    def save_world(self, world: Map, player: Player):
+    def save_save(self, save: Map, player: Player):
         save_file = self.save_file.format(self.save_slot)
         save_file_path = os.path.join(self.save_path, save_file)
         self.timestamp_print('start saving...')
@@ -112,9 +116,9 @@ class SaveManager(object):
                 'creating directory: {}'.format(self.save_path))
             os.mkdir(self.save_path)
 
-        # Efficiently save the world to a binary file
+        # Efficiently save the save to a binary file
         with open(save_file_path, 'wb') as file:
-            pickle.dump({"player": player, "world": world._world}, file)
+            pickle.dump({"player": player, "save": save._save}, file)
 
         self.timestamp_print('saving completed')
 

@@ -1,5 +1,5 @@
 from collections import deque
-from typing import List
+from typing import List, Any, Union
 
 import pyglet
 from pyglet.gl import *
@@ -78,8 +78,9 @@ class GameScene(Scene):
         Scene.__init__(self)
         self.window: pyglet.window.Window = window
         self.batch: pyglet.graphics.Batch = pyglet.graphics.Batch()
+        self.game_objects: Union[Any, PhysicalObject] = list()
         self.player: Player = Player((self.window.height/2, self.window.width/2), self.batch)
-        self.game_objects: List[PhysicalObject] = list()
+        self.game_objects.append(self.player)
         self.map: Map = Map()
 
         # Define local player variables
@@ -118,14 +119,6 @@ class GameScene(Scene):
             self.player_mpx_strafe += 10
 
     def update(self, dt):
-        if self.player_rot_strafe:
-            self.player.rotate(self.player_rot_strafe)
-            # self.player_rot_strafe = 0
-
-        if self.player_mpx_strafe:
-            self.player.move_pixels(dt, self.player_mpx_strafe)
-            # self.player_mpx_strafe = 0
-
         # To avoid handling collisions twice, we employ nested loops of ranges.
         # This method also avoids the problem of colliding an object with itself.
         for i in range(len(self.game_objects)):
@@ -140,7 +133,15 @@ class GameScene(Scene):
                         obj_1.handle_collision_with(obj_2)
                         obj_2.handle_collision_with(obj_1)
 
-        self.map.update(dt)
+        if self.player_rot_strafe:
+            self.player.rotate(self.player_rot_strafe)
+            # self.player_rot_strafe = 0
+
+        if self.player_mpx_strafe:
+            self.player.move_pixels(dt, self.player_mpx_strafe)
+            # self.player_mpx_strafe = 0
+
+        self.map.update(dt, self.window, self.batch, self.game_objects)
 
     def tick_update(self, dt):
-        self.map.tick_update(dt, self.window, self.batch)
+        self.map.tick_update(dt, self.window, self.batch, self.game_objects)
