@@ -5,6 +5,7 @@ from opensimplex import OpenSimplex
 
 import sprites
 from bubble import BubbleObject, Bubble
+from noise import SimplexNoiseGen
 from sprites.objects import PhysicalObject
 from utils import randint_lookup
 
@@ -15,10 +16,10 @@ class Map(object):
         self.bubbles: List[BubbleObject] = []
 
     def create_random_bubble(self, x, y, bubbles_list, batch, objects):
-        bubble_rand = OpenSimplex(4096).noise2d(self.tick_updates, 0)
+        bubble_rand = SimplexNoiseGen(4096).fBm(self.tick_updates, 0)
         bubble_randint = randint_lookup(bubble_rand, 0, 65535)
 
-        size_rand = OpenSimplex(4096).noise2d(self.tick_updates, 1)
+        size_rand = SimplexNoiseGen(4096).fBm(self.tick_updates, 1)
         size_randint = randint_lookup(size_rand, 21, 80)  # size_rand * 50 + 10
 
         for bubble in bubbles_list:
@@ -52,7 +53,7 @@ class Map(object):
 
     def tick_update(self, dt, window: pyglet.window.Window, batch: pyglet.graphics.Batch, objects):
         # print("UPDATE")
-        y_rand = OpenSimplex(4096).noise2d(self.tick_updates, 2)
+        y_rand = SimplexNoiseGen(4096).fBm(self.tick_updates, 2)
         size_randint = randint_lookup(y_rand, 0, window.height)
         self.create_random_bubble(window.width, size_randint, sprites.BUBBLES, batch, objects)
         self.tick_updates += 1

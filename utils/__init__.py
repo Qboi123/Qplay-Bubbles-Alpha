@@ -1,3 +1,5 @@
+import random
+
 import sys
 
 import io
@@ -17,6 +19,8 @@ from pyglet.image.codecs.pil import PILImageDecoder
 from pyglet.image.codecs.png import PNGImageDecoder
 from io import BytesIO
 
+from perlin import SimplexNoise
+
 UPDATE_INTERVAL = 60
 TICKS_PER_SEC = 5
 
@@ -34,12 +38,12 @@ FALSE = False
 
 def randint_lookup(value_in, min_, max_):
     value_in2 = (value_in / 2) + 0.5
-    sys.stderr.write(value_in2)
+    sys.stderr.write(str(value_in2) + " ")
     # value_in2 = value_in
     return int(round(value_in2 * (max_ - min_) + min_))
 
 
-def version2name(version: Tuple[str, int, int, int]):  #releasetype: str, a: int, b: int, c: int=0):
+def version2name(version: Tuple[str, int, int, int]):  # releasetype: str, a: int, b: int, c: int=0):
     rt: str = version[0]
     rt = rt.title()
     a: int = version[1]
@@ -153,3 +157,54 @@ def pillow2pyglet(im: Image.Image):
 def distance(point_1=(0, 0), point_2=(0, 0)):
     """Returns the distance between two points"""
     return math.sqrt((point_1[0] - point_2[0]) ** 2 + (point_1[1] - point_2[1]) ** 2)
+
+
+# fast math algorithms
+class FastRandom(object):
+    def __init__(self, seed):
+        self.seed = seed
+
+    def randint(self):
+        self.seed = (214013 * self.seed + 2531011)
+        return (self.seed >> 16) & 0x7FFF
+
+
+# random.randint()
+
+
+class Seed(object):
+    def __init__(self, seed):
+        self._seed = seed
+
+    def randint(self, x, y):
+        h: int = self._seed + x * 374761393 + y * 668265263
+        h = (h**(h >> 13))*1274126177
+        return h**(h >> 16)
+
+
+# Factory class utilizing perlin.SimplexNoise
+class SimplexNoiseGen(object):
+    def __init__(self, seed, octaves=0, zoom_level=1):  # octaves = 6,
+        perm = list(range(255))
+        random.Random(seed).shuffle(perm)
+        self.noise = SimplexNoise(permutation_table=perm).noise2
+
+        self.PERSISTENCE = 2 # 2.1379201 # AKA lacunarity
+        self.H = 0.836281
+        self.OCTAVES = octaves       # Higher linearly increases calc time; increases apparent 'randomness'
+        self.weights = [self.PERSISTENCE ** (-self.H * n) for n in range(self.OCTAVES)]
+
+        self.zoom_level = zoom_level # Smaller will create gentler, softer transitions. Larger is more mountainy
+
+    def fBm(self,x,z):
+        x *= self.zoom_level
+        z *= self.zoom_level
+        y = 0
+        for weight in self.weights:
+            y += self.noise(x, z) * weight
+
+            x *= self.PERSISTENCE
+            z *= self.PERSISTENCE
+        return y
+
+
