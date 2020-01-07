@@ -24,6 +24,8 @@ from perlin import SimplexNoise
 UPDATE_INTERVAL = 60
 TICKS_PER_SEC = 5
 
+AUTO_SAVE_INTERVAL = 60
+
 PLAYER_SPEED = 2
 
 HORIZONTAL = "horizontal"
@@ -37,9 +39,9 @@ FALSE = False
 
 
 def randint_lookup(value_in, min_, max_):
-    value_in2 = (value_in / 2) + 0.5
+    # value_in2 = (value_in / 2) + 0.5
     sys.stderr.write(str(value_in2) + " ")
-    # value_in2 = value_in
+    value_in2 = value_in
     return int(round(value_in2 * (max_ - min_) + min_))
 
 
@@ -178,7 +180,7 @@ class Seed(object):
 
     def randint(self, x, y):
         h: int = self._seed + x * 374761393 + y * 668265263
-        h = (h**(h >> 13))*1274126177
+        h = (h**(h >> 16))*1274126177
         return h**(h >> 16)
 
 

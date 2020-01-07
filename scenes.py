@@ -79,7 +79,7 @@ class GameScene(Scene):
         self.window: pyglet.window.Window = window
         self.batch: pyglet.graphics.Batch = pyglet.graphics.Batch()
         self.game_objects: Union[Any, PhysicalObject] = list()
-        self.player: Player = Player((self.window.height/2, self.window.width/2), self.batch)
+        self.player: Player = Player((self.window.height / 2, self.window.width / 2), self.window, self.batch)
         self.game_objects.append(self.player)
         self.map: Map = Map()
 
@@ -140,8 +140,11 @@ class GameScene(Scene):
         if self.player_mpx_strafe:
             self.player.move_pixels(dt, self.player_mpx_strafe)
             # self.player_mpx_strafe = 0
-
+        self.player.update(dt)
         self.map.update(dt, self.window, self.batch, self.game_objects)
 
     def tick_update(self, dt):
         self.map.tick_update(dt, self.window, self.batch, self.game_objects)
+
+    def auto_save_update(self, dt):
+        self.save.save_save(self.map, self.player)

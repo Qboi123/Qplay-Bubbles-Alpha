@@ -17,6 +17,7 @@ def get_bubble_images():
     # Initialize bubble dictionaries
     bub = dict()
     bub["normal_bubble"] = dict()
+    bub["speedy_bubble"] = dict()
     bub["triple_bubble"] = dict()
     bub["double_bubble"] = dict()
     bub["kill_bubble"] = dict()
@@ -51,6 +52,7 @@ def get_bubble_images():
     # Adding the different resolutions to the bubbles
     for i in range(_min, _max + 1):
         bub["normal_bubble"][i] = utils.createbubble_image((i, i), None, "white")
+        bub["speedy_bubble"][i] = utils.createbubble_image((i, i), None, "white")
         bub["double_bubble"][i] = utils.createbubble_image((i, i), None, "gold")
         bub["triple_bubble"][i] = utils.createbubble_image((i, i), None, "blue", "#007fff", "#00ffff", "white")
         bub["slowdown_bubble"][i] = utils.createbubble_image((i, i), None, "#ffffff", "#a7a7a7", "#7f7f7f", "#373737")
@@ -71,6 +73,7 @@ def get_bubble_images():
         bub["ghost_mode_bubble"][i] = utils.createbubble_image((i, i), None, "#7f7f7f", "#7f7f7f", "#7f7f7f", "#373737")
 
         center_image(bub["normal_bubble"][i])
+        center_image(bub["speedy_bubble"][i])
         center_image(bub["double_bubble"][i])
         center_image(bub["triple_bubble"][i])
         center_image(bub["slowdown_bubble"][i])

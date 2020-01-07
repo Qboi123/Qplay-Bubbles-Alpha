@@ -16,12 +16,12 @@ __all__ = ('SimplexNoiseGen', 'PerlinNoise')
 
 # Factory class utilizing perlin.SimplexNoise
 class SimplexNoiseGen(object):
-    def __init__(self, seed, octaves=6, zoom_level=1):  # octaves = 6,
+    def __init__(self, seed, octaves=6, zoom_level=16):  # octaves = 6,
         perm = list(range(255))
         random.Random(seed).shuffle(perm)
         self.noise = SimplexNoise(permutation_table=perm).noise2
 
-        self.PERSISTENCE = 2  # 2.1379201 # AKA lacunarity
+        self.PERSISTENCE = 3  # 2.1379201 # AKA lacunarity
         self.H = 6  # 0.836281
         self.OCTAVES = octaves       # Higher linearly increases calc time; increases apparent 'randomness'
         self.weights = [self.PERSISTENCE ** (-self.H * n) for n in range(self.OCTAVES)]

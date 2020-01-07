@@ -92,3 +92,7 @@ class SceneManager(object):
     def tick_update(self, dt):
         if hasattr(self.current_scene, "tick_update"):
             self.current_scene.tick_update(dt)
+
+    def auto_save_update(self, dt):
+        if hasattr(self.current_scene, "auto_save_update"):
+            self.current_scene.auto_save_update(dt)

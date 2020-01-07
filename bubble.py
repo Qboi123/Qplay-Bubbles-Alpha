@@ -34,7 +34,7 @@ class Bubble(object):
 
 
 class BubbleObject(Collidable):
-    def __init__(self, base_class, x, y, batch, size):
+    def __init__(self, base_class, x, y, batch, size, speed):
         parent: BubbleObject
 
         self.scoreMultiplier = 0
@@ -43,6 +43,13 @@ class BubbleObject(Collidable):
         self.name = self.baseBubbleClass.get_unlocalized_name()
 
         bub_resource = resources.bubbles[self.name]
+
+        if speed is not None:
+            pass
+        else:
+            slowest = self.baseBubbleClass.speedMin
+            speed = slowest
+        self.speed = speed
 
         if size:
             pass
@@ -78,7 +85,7 @@ class BubbleObject(Collidable):
         # if self.baseBubbleClass.direction == SOUTH:
         #     dy = self.baseBubbleClass.speed
 
-        dx = -self.baseBubbleClass.speed
+        dx = -self.speed
         dy = 0
 
         # print(self.direction)
@@ -94,6 +101,9 @@ class BubbleObject(Collidable):
             other_object: Player
 
             print("%s has collision with %s" % (repr(self), repr(other_object)))
-            # other_object.add_score(((self.size / 2) + (self.speed / 5 / 7)) * self.scoreMultiplier)
+            other_object.add_score(((self.size / 2) + (self.speed / utils.TICKS_PER_SEC / 7)) * self.baseBubbleClass.scoreMultiplier)
+
+            if hasattr(self.baseBubbleClass, "on_collision"):
+                self.baseBubbleClass.on_collision(other_object)
 
             self.dead = True

@@ -1,3 +1,4 @@
+import random
 from typing import Dict, List
 
 import pyglet
@@ -14,17 +15,20 @@ class Map(object):
     def __init__(self):
         self.tick_updates = 0
         self.bubbles: List[BubbleObject] = []
+        random.seed(4096)
 
     def create_random_bubble(self, x, y, bubbles_list, batch, objects):
-        bubble_rand = SimplexNoiseGen(4096).fBm(self.tick_updates, 0)
-        bubble_randint = randint_lookup(bubble_rand, 0, 65535)
+        # bubble_rand = random.random(self.tick_updates, 0)
+        bubble_randint = random.randint(0, 65535)
 
-        size_rand = SimplexNoiseGen(4096).fBm(self.tick_updates, 1)
-        size_randint = randint_lookup(size_rand, 21, 80)  # size_rand * 50 + 10
+        # size_rand = random.random(self.tick_updates, 1)
+        size_randint = random.randint(21, 80)  # size_rand * 50 + 10
 
         for bubble in bubbles_list:
             if bubble.randomMin <= bubble_randint <= bubble.randomMax:
-                objects.append(self.create_bubble(x + size_randint / 2, y, bubble, batch, size_randint))
+                # speed_rand = random.random(self.tick_updates, 1)
+                speed_randint = random.randint(bubble.speedMin, bubble.speedMax)  # size_rand * 50 + 10
+                objects.append(self.create_bubble(x + size_randint / 2, y, bubble, batch, size_randint, speed_randint))
                 break
 
     def remove_bubble(self, obj: BubbleObject, objects: list):
@@ -32,8 +36,8 @@ class Map(object):
         obj.sprite.delete()
         self.bubbles.remove(obj)
 
-    def create_bubble(self, x, y, bubble, batch, size):
-        bub = bubble(x, y, self, batch, size)
+    def create_bubble(self, x, y, bubble, batch, size, speed):
+        bub = bubble(x, y, self, batch, size, speed)
         self.bubbles.append(bub)
         bub.draw()
         return bub
@@ -53,7 +57,7 @@ class Map(object):
 
     def tick_update(self, dt, window: pyglet.window.Window, batch: pyglet.graphics.Batch, objects):
         # print("UPDATE")
-        y_rand = SimplexNoiseGen(4096).fBm(self.tick_updates, 2)
-        size_randint = randint_lookup(y_rand, 0, window.height)
+        # y_rand = random.random(self.tick_updates, 2)
+        size_randint = random.randint(0, window.height)
         self.create_random_bubble(window.width, size_randint, sprites.BUBBLES, batch, objects)
         self.tick_updates += 1
