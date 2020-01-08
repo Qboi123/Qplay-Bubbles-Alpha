@@ -30,12 +30,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from scenes import GameScene, Scene
+from scenes import GameScene, Scene, LoadingScene
 from map.savemanager import SaveManager
-# from pyglet_gui import gui
 
 
-# noinspection PyUnusedClass,PySameParameterValue
 class SceneManager(object):
     """A class to handle switching between Scenes instances."""
 
@@ -47,15 +45,17 @@ class SceneManager(object):
 
         # A dictionary of available Scenes
         self.scenes = {}
+        self.loaded_scenes = []
         self.current_scene = None
 
         # All Scenes will have a reference to the manager
         Scene.scene_manager = self
 
         # Add the defaults Scenes to the manager
+        self.add_scene(LoadingScene(self.window))
         self.add_scene(GameScene(self.window))
         # Activate the Menu Scene
-        self.change_scene("GameScene")
+        self.change_scene("LoadingScene")
 
     def add_scene(self, scene_instance):
         """Add a Scene instance to the manager.
@@ -78,6 +78,9 @@ class SceneManager(object):
             self.window.remove_handlers(self.current_scene)
         self.current_scene = self.scenes[scene_name]
         self.window.push_handlers(self.current_scene)
+        if self.current_scene not in self.loaded_scenes:
+            self.current_scene.init_scene()
+            self.loaded_scenes.append(self.current_scene)
 
     def update(self, dt):
         """Update the currently set Scene.

@@ -46,10 +46,10 @@ class Map(object):
         for bubble in self.bubbles:
             bubble.draw()
 
-    def update(self, dt, window: pyglet.window.Window, batch: pyglet.graphics.Batch, objects):
+    def update(self, dt, window: pyglet.window.Window, batch: pyglet.graphics.Batch, objects, player):
         # print(self.bubbles)
         for bubble in self.bubbles:
-            bubble.update(dt)
+            bubble.update(dt, player)
             if bubble.position.x < (0 - bubble.size / 2):
                 self.remove_bubble(bubble, objects)
             if bubble.dead == True:

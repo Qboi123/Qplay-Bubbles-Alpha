@@ -80,7 +80,7 @@ class SaveManager(object):
     def load_save(self, map_: Map, player: Player, batch: Batch):
         save_file = self.save_file.format(self.save_slot)
         save_file_path = os.path.join(self.save_path, save_file)
-        self.timestamp_print('start loading...')
+        self.timestamp_print('start loading')
 
         try:
             with open(save_file_path, 'rb') as file:
@@ -108,7 +108,7 @@ class SaveManager(object):
     def save_save(self, save: Map, player: Player):
         save_file = self.save_file.format(self.save_slot)
         save_file_path = os.path.join(self.save_path, save_file)
-        self.timestamp_print('start saving...')
+        self.timestamp_print('start saving')
 
         # If the save directory doesn't exist, create it
         if not os.path.exists(self.save_path):

@@ -100,33 +100,34 @@ def createellipse(size, bg, fill=None, outline=None, width: int = 0):
     draw.ellipse((0, 0, *size), fill, outline, width)
 
 
-def createbubble_image(size, fp2png=None, *colors):
+def createbubble_image(size, inner=None, *colors):
     im = _new('RGBA', size, '#ffffff00')
     # im.putalpha(0)
-    if fp2png is not None:
-        png = _open(fp2png)
+    if inner is not None:
+        inner_im = _open(inner)
     # draw = ImageDraw.Draw(im, "RGBA")
     i = 2
 
     # Drawung ellipses for Bubble.
     width = 1
     w = width
-    for circ_color in colors:
-        if circ_color != colors[0]:
-            draw_ellipse(im, (0 + i, 0 + i, size[0] - i, size[0] - i), outline=circ_color, width=w, antialias=8)
-        elif circ_color != colors[-1]:
-            draw_ellipse(im, (0 + i, 0 + i, size[0] - i, size[0] - i), outline=circ_color, width=w, antialias=8)
+    for index in range(0, len(colors)):
+        
+        if index != 0:
+            draw_ellipse(im, (0 + i, 0 + i, size[0] - i, size[0] - i), outline=colors[index], width=w, antialias=8)
+        elif index != len(colors)-1:
+            draw_ellipse(im, (0 + i, 0 + i, size[0] - i, size[0] - i), outline=colors[index], width=w, antialias=8)
         else:
-            draw_ellipse(im, (0 + i, 0 + i, size[0] - i, size[0] - i), outline=circ_color, width=w, antialias=8)
+            draw_ellipse(im, (0 + i, 0 + i, size[0] - i, size[0] - i), outline=colors[index], width=w, antialias=8)
         i += 1.5
 
     i += 10
 
-    if fp2png is not None:
+    if inner is not None:
         png2 = _new('RGBA', size, (0, 0, 0, 0))
         # noinspection PyUnboundLocalVariable
-        png = png.resize((size[0] - int(i), size[1] - int(i)))
-        png2.paste(png, (int(i / 2), int(i / 2)))
+        inner_im = inner_im.resize((size[0] - int(i), size[1] - int(i)))
+        png2.paste(inner_im, (int(i / 2), int(i / 2)))
 
         im = Image.alpha_composite(png2, im)
 
@@ -210,3 +211,7 @@ class SimplexNoiseGen(object):
         return y
 
 
+def center_image(image):
+    """Sets an image's anchor point to its center"""
+    image.anchor_x = image.width / 2
+    image.anchor_y = image.height / 2

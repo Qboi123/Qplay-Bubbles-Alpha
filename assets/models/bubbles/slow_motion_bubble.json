@@ -1,0 +1,8 @@
+{
+  "type": "bubble/dynamic",
+  "colors": [
+    "#ffffffff",
+    "#00000000",
+    "#000000ff"
+  ]
+}

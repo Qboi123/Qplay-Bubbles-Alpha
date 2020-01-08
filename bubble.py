@@ -1,11 +1,10 @@
 from pyglet.sprite import Sprite
 
 import globals as g
-import resources
 import utils
-from assets.exceptions import UnlocalizedNameError
+from exceptions import UnlocalizedNameError
 from objects import Collidable
-from sprites.objects import PhysicalObject
+from resources import Resources
 from sprites.player import Player
 from utils.classes import Position2D
 
@@ -42,7 +41,7 @@ class BubbleObject(Collidable):
         self.baseBubbleClass = base_class
         self.name = self.baseBubbleClass.get_unlocalized_name()
 
-        bub_resource = resources.bubbles[self.name]
+        bub_resource = Resources.get_resource("bubbles", self.name)
 
         if speed is not None:
             pass
@@ -56,7 +55,7 @@ class BubbleObject(Collidable):
         else:
             smallest = min(list(bub_resource.keys()))
             size = smallest
-        image = bub_resource[size]
+        image = Resources.get_resource("bubbles", self.name, size)
 
         self.size = size
 
@@ -73,7 +72,7 @@ class BubbleObject(Collidable):
                            self.sprite.scale_x, self.sprite.scale_y)
         # print("Draw")
 
-    def update(self, dt):
+    def update(self, dt, player):
         # dx, dy = self.sprite.position
 
         # if self.baseBubbleClass.direction == WEST:
@@ -88,6 +87,12 @@ class BubbleObject(Collidable):
         dx = -self.speed
         dy = 0
 
+        speed_multiply = player._score / 10000
+        if speed_multiply < 0.5:
+            speed_multiply = 0.5
+
+        dx *= speed_multiply
+
         # print(self.direction)
 
         # self.sprite.position = (x * dt, y * dt)
@@ -100,8 +105,9 @@ class BubbleObject(Collidable):
         if type(other_object) == Player:
             other_object: Player
 
-            print("%s has collision with %s" % (repr(self), repr(other_object)))
-            other_object.add_score(((self.size / 2) + (self.speed / utils.TICKS_PER_SEC / 7)) * self.baseBubbleClass.scoreMultiplier)
+            # print("%s has collision with %s" % (repr(self), repr(other_object)))
+            other_object.add_score(((self.size / 2) + (self.speed / utils.TICKS_PER_SEC / 7))
+                                   * self.baseBubbleClass.scoreMultiplier)
 
             if hasattr(self.baseBubbleClass, "on_collision"):
                 self.baseBubbleClass.on_collision(other_object)

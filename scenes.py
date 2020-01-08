@@ -1,13 +1,18 @@
 from collections import deque
-from typing import List, Any, Union
+from threading import Thread, Event
 
 import pyglet
 from pyglet.gl import *
+from pyglet.graphics import Batch
 from pyglet.media import Player as MediaPlayer
+from pyglet.text import Label
 from pyglet.window import key
+from typing import List, Any, Union, Optional
 
+from events import CollisionEvent
 from map import Map
-from sprites.objects import PhysicalObject
+from objects import Collidable
+from resources import Resources
 from sprites.player import Player
 
 
@@ -71,30 +76,52 @@ class Scene:
     def update(self, dt):
         raise NotImplementedError
 
+    def init_scene(self):
+        pass
+
 
 # noinspection PyUnusedFunction
 class GameScene(Scene):
     def __init__(self, window):
         Scene.__init__(self)
+
         self.window: pyglet.window.Window = window
         self.batch: pyglet.graphics.Batch = pyglet.graphics.Batch()
-        self.game_objects: Union[Any, PhysicalObject] = list()
-        self.player: Player = Player((self.window.height / 2, self.window.width / 2), self.window, self.batch)
-        self.game_objects.append(self.player)
-        self.map: Map = Map()
+
+        self.player: Optional[Player] = None
+        self.game_objects: List[Union[Any, Collidable]] = list()
+        self.map: Optional[Map] = None
+        self.fps: Optional[Label] = None
 
         # Define local player variables
         self.player_rot_strafe = 0
         self.player_mpx_strafe = 0
 
+    def init_scene(self):
+        self.player: Player = Player((self.window.height / 2, self.window.width / 2), self.window, self.batch)
+        self.game_objects.append(self.player)
+        self.map: Map = Map()
+        self.fps: Label = Label("0 FPS", "helverica", 14, False, True, x=self.window.width, y=self.window.height,
+                                width=self.window.width, anchor_x="right", anchor_y="top", align="right",
+                                multiline=False, batch=self.batch)
+        self.fps_text = "FPS: 0"
+
     def on_draw(self):
         try:
+            glClearColor(0.1, 0.5, 0.55, 1)
             self.window.clear()
             self.batch.draw()
             self.player.draw()
             self.map.draw()
+            self.fps.draw()
         except Exception as e:
-            print("%s: %s" % (str(e.__repr__()), str(e.args[0])))
+            tb = e.__traceback__
+            if tb.tb_next:
+                new_tb = tb.tb_next
+                while tb:
+                    tb = new_tb
+                    new_tb = tb.tb_next
+            print("Line %s | File %s - %s: %s" % (tb.tb_lineno, tb.tb_frame.f_code.co_filename, str(e.__class__.__name__), str(e.args[0])))
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.LEFT:
@@ -131,20 +158,60 @@ class GameScene(Scene):
                 if not obj_1.dead and not obj_2.dead:
                     if obj_1.collides_with(obj_2):
                         obj_1.handle_collision_with(obj_2)
+                        if isinstance(obj_1, Player):
+                            obj_1.handle_event(CollisionEvent(obj_1, obj_2, self.window, self.batch, self.map, self.game_objects))
                         obj_2.handle_collision_with(obj_1)
+                        self.fps_text = "FPS: %s" % round(1/dt, 1)
 
         if self.player_rot_strafe:
-            self.player.rotate(self.player_rot_strafe)
+            self.player.rotate(dt, self.player_rot_strafe)
             # self.player_rot_strafe = 0
 
         if self.player_mpx_strafe:
             self.player.move_pixels(dt, self.player_mpx_strafe)
             # self.player_mpx_strafe = 0
+
         self.player.update(dt)
-        self.map.update(dt, self.window, self.batch, self.game_objects)
+        self.map.update(dt, self.window, self.batch, self.game_objects, self.player)
 
     def tick_update(self, dt):
         self.map.tick_update(dt, self.window, self.batch, self.game_objects)
+        self.fps.text = self.fps_text
 
     def auto_save_update(self, dt):
-        self.save.save_save(self.map, self.player)
+        self.scene_manager.save.save_save(self.map, self.player)
+
+
+# noinspection PyUnusedClass,PySameParameterValue
+class LoadingScene(Scene, Resources):
+    # event = Event()
+    def __init__(self, window):
+        self.window = window
+    #     self.batch = Batch()
+    #
+    #     self.infoLabel = Label(
+    #         "", "Helvetica", 22, bold=True, color=(63, 63, 63, 255), x=window.width / 2, y=window.height / 2,
+    #         width=window.width, anchor_x="center", anchor_y="baseline", align="center", multiline=True, batch=self.batch
+    #     )
+    #
+    #     # Thread(target=lambda: self.t_loop(), daemon=True).start()
+    #     # self.event = Event()
+    #
+        super(LoadingScene, self).__init__(self)
+
+        self.reindex()
+        self.load()
+    #
+    # def on_draw(self):
+    #     glClearColor(0, 0, 0, 0)
+    #     self.infoLabel.text = self.status
+    #     self.batch.draw()
+    #     self.infoLabel.draw()
+    #
+    # def on_resize(self, width, height):
+    #     self.infoLabel.x = self.window.width / 2
+    #     self.infoLabel.y = self.window.height / 2
+    #
+    def update(self, dt):
+        if self.loaded:
+            self.scene_manager.change_scene("GameScene")
