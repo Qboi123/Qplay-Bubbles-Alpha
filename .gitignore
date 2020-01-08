@@ -10,6 +10,10 @@ gen
 *.pyc
 /__pycache__/
 /temp/
+/assets/temp/
+/output/
 /bin/
 /obj/
 /venv/
+/build.py
+/build_config.json
