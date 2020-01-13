@@ -23,6 +23,42 @@ class Compiler(object):
                  no_upx=False, version_file: str = None, manifest_file: str = None, uac_admin=False, uac_uiaccess=False,
                  win_private_assemblies=False, win_no_prefer_redirects=False, osx_bundle_indentifier: str = None,
                  runtime_tmpdir: str = "", bootloader_ignore_signals=False, *additional_args):
+        """
+        Compiler class, compiling python workspace.
+        :param exclude:
+        :param icon:
+        :param main_folder:
+        :param main_file:
+        :param hidden_imports:
+        :param dlls:
+        :param one_file:
+        :param hide_console:
+        :param fix_recursion_limit:
+        :param upx_dir:
+        :param log_level:
+        :param app_name:
+        :param extra_binaries:
+        :param import_paths:
+        :param add_hooks_dirs:
+        :param runtime_hooks:
+        :param exclude_modules:
+        :param key:
+        :param debug:
+        :param no_unicode:
+        :param clean:
+        :param apply_symbol_table:
+        :param no_upx:
+        :param version_file:
+        :param manifest_file:
+        :param uac_admin:
+        :param uac_uiaccess:
+        :param win_private_assemblies:
+        :param win_no_prefer_redirects:
+        :param osx_bundle_indentifier:
+        :param runtime_tmpdir:
+        :param bootloader_ignore_signals:
+        :param additional_args:
+        """
         if hidden_imports is None:
             hidden_imports = list()
 
@@ -88,10 +124,18 @@ class Compiler(object):
         self.check()
 
     def check(self):
+        """
+        Check for errors
+        :return:
+        """
         if self.icon in self.exclude:
             raise CompilerError("Can't exclude icon!")
 
     def automatic(self):
+        """
+        Automatic mode
+        :return:
+        """
         self.reindex()
         args_list = self.get_args()
         command = self.get_command(args_list)
@@ -99,11 +143,21 @@ class Compiler(object):
         self.compile(command)
 
     def get_command(self, args_list):
+        """
+        Get command for PyInstaller
+        :param args_list:
+        :return:
+        """
         args = self.parse_arg_list(args_list)
         return "pyinstaller " + args
 
     # noinspection PyBroadException
     def compile(self, command):
+        """
+        Compile the workspace, with the given command for PyInstaller
+        :param command:
+        :return:
+        """
         from PyInstaller import __main__ as pyi
         # auto_py2exe.__main__.temporary_directory = self.join_path(self.mainFolder, "obj")
 
@@ -120,7 +174,7 @@ class Compiler(object):
         pyinstaller_fail = True
         sys.argv = shlex.split(command) + extra_args  # Put command into sys.argv and extra args
         try:
-            print("Executing: {0}".format(command), file=sys.stderr)
+            print("Executing: {0}".format(command))
             pyi.run()  # Execute PyInstaller
             pyinstaller_fail = False
         except:
@@ -143,6 +197,12 @@ class Compiler(object):
         print("Complete.")
 
     def move_project(self, src, dst):
+        """
+        Move the project from <src> to <dst>. Mostly common it moves the project to "./bin"
+        :param src:
+        :param dst:
+        :return:
+        """
         """ Move the output package to the desired path (default is output/ - set in script.js) """
         # Make sure the destination exists
         if not os.path.exists(dst):
@@ -162,9 +222,20 @@ class Compiler(object):
 
     @staticmethod
     def join_path(path, *paths):
+        """
+        Joins path using the "os" package, then replaces every "\" with "/"
+        :param path:
+        :param paths:
+        :return:
+        """
         return os.path.join(path, *paths).replace("\\", "/")
 
     def _reindex_relpath(self, folder):
+        """
+        Reindex's the relative path to <folder>
+        :param folder:
+        :return:
+        """
         for export_path in os.listdir(self.join_path(self.mainFolder, folder)):
             export_path = self.join_path(folder, export_path)
             path = self.join_path(self.mainFolder, export_path)
@@ -180,6 +251,10 @@ class Compiler(object):
                         self._reindex_relpath(export_path)
 
     def reindex(self):
+        """
+        Reindex all files in the workspace
+        :return:
+        """
         self.allFiles = []
         for export_path in self.mainContents:
             path = self.join_path(self.mainFolder, export_path)
@@ -194,6 +269,10 @@ class Compiler(object):
                     self._reindex_relpath(export_path)
 
     def get_args(self) -> list:
+        """
+        Get arguments for the PyInstaller command
+        :return:
+        """
         args = ["-y"]
         if self.oneFile:
             args.append("-F")
@@ -268,6 +347,11 @@ class Compiler(object):
 
     @staticmethod
     def parse_arg_list(args_list):
+        """
+        Parses a list of arguments into a string
+        :param args_list:
+        :return:
+        """
         args = args_list[0]
 
         if len(args_list) > 1:

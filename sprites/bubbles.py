@@ -1,29 +1,34 @@
+from pyglet.graphics import Batch
+from pyglet.window import Window
+
 import resources
-import bubble
+from bubble import BubbleObject, Bubble, BubblePriorityCalculator
+from effects import TeleportingEffect, SpeedBoostEffect
+from events import CollisionEvent
+from init import Effects
 from sprites.objects import PhysicalObject
 from sprites.player import Player
 
 
-class NormalBubble(bubble.Bubble):
+class NormalBubble(Bubble):
     def __init__(self):
         super(NormalBubble, self).__init__()
 
         self.set_unlocalized_name("normal_bubble")
-        self.randomMin = 0
-        self.randomMax = 15000
         self.speedMultiplier = 12
         self.speedMin = 7
         self.speedMax = 16
         self.scoreMultiplier = 1
+        BubblePriorityCalculator.add(self, 150000)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
-        return bubble.BubbleObject(self, x, y, batch, size, speed)
+        return BubbleObject(self, x, y, batch, size, speed)
 
-    def on_collision(self, player: Player):
+    def on_collision(self, event: CollisionEvent):
         pass
 
 
-class SpeedyBubble(bubble.Bubble):
+class SpeedyBubble(Bubble):
     def __init__(self):
         super(SpeedyBubble, self).__init__()
 
@@ -33,15 +38,16 @@ class SpeedyBubble(bubble.Bubble):
         self.speedMin = 22
         self.speedMax = 28
         self.scoreMultiplier = 1
+        BubblePriorityCalculator.add(self, 50000)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
-        return bubble.BubbleObject(self, x, y, batch, size, speed)
+        return BubbleObject(self, x, y, batch, size, speed)
 
-    def on_collision(self, player: Player):
+    def on_collision(self, event: CollisionEvent):
         pass
 
 
-class DoubleBubble(bubble.Bubble):
+class DoubleBubble(Bubble):
     def __init__(self):
         super(DoubleBubble, self).__init__()
 
@@ -51,15 +57,16 @@ class DoubleBubble(bubble.Bubble):
         self.speedMin = 22
         self.speedMax = 32
         self.scoreMultiplier = 2
+        BubblePriorityCalculator.add(self, 20000)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
-        return bubble.BubbleObject(self, x, y, batch, size, speed)
+        return BubbleObject(self, x, y, batch, size, speed)
 
-    def on_collision(self, player: Player):
+    def on_collision(self, event: CollisionEvent):
         pass
 
 
-class TripleBubble(bubble.Bubble):
+class TripleBubble(Bubble):
     def __init__(self):
         super(TripleBubble, self).__init__()
 
@@ -70,14 +77,16 @@ class TripleBubble(bubble.Bubble):
         self.speedMax = 42
         self.scoreMultiplier = 3
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return bubble.BubbleObject(self, x, y, batch, size, speed)
+        BubblePriorityCalculator.add(self, 10000)
 
-    def on_collision(self, player: Player):
+    def __call__(self, x, y, map, batch, size=None, speed=None):
+        return BubbleObject(self, x, y, batch, size, speed)
+
+    def on_collision(self, event: CollisionEvent):
         pass
 
 
-class DeadlyBubble(bubble.Bubble):
+class DeadlyBubble(Bubble):
     def __init__(self):
         super(DeadlyBubble, self).__init__()
 
@@ -88,14 +97,16 @@ class DeadlyBubble(bubble.Bubble):
         self.speedMax = 19
         self.scoreMultiplier = 3
 
+        BubblePriorityCalculator.add(self, 50000)
+
     def __call__(self, x, y, map, batch, size=None, speed=None):
-        return bubble.BubbleObject(self, x, y, batch, size, speed)
+        return BubbleObject(self, x, y, batch, size, speed)
 
-    def on_collision(self, player: Player):
-        player.damage(1)
+    def on_collision(self, event: CollisionEvent):
+        event.player.damage(1)
 
 
-class LifeBubble(bubble.Bubble):
+class LifeBubble(Bubble):
     def __init__(self):
         super(LifeBubble, self).__init__()
 
@@ -105,9 +116,46 @@ class LifeBubble(bubble.Bubble):
         self.speedMin = 32
         self.speedMax = 42
         self.scoreMultiplier = 0
+        BubblePriorityCalculator.add(self, 15000)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
-        return bubble.BubbleObject(self, x, y, batch, size, speed)
+        return BubbleObject(self, x, y, batch, size, speed)
 
-    def on_collision(self, player: Player):
-        player.gain_lives(1)
+    def on_collision(self, event: CollisionEvent):
+        event.player.gain_lives(1)
+
+
+class TeleporterBubble(Bubble):
+    def __init__(self):
+        super(TeleporterBubble, self).__init__()
+
+        self.set_unlocalized_name("teleporter_bubble")
+        self.speedMin = 32
+        self.speedMax = 42
+        self.scoreMultiplier = 0
+
+        BubblePriorityCalculator.add(self, 1000)
+
+    def __call__(self, x, y, map, batch, size=None, speed=None):
+        return BubbleObject(self, x, y, batch, size, speed)
+
+    def on_collision(self, event: CollisionEvent):
+        event.player.add_effect(TeleportingEffect(5, event.scene, event.eventObject.size - 80))
+
+
+class SpeedBoostBubble(Bubble):
+    def __init__(self):
+        super(SpeedBoostBubble, self).__init__()
+
+        self.set_unlocalized_name("speedboost_bubble")
+        self.speedMin = 32
+        self.speedMax = 47
+        self.scoreMultiplier = 1.75
+
+        BubblePriorityCalculator.add(self, 2000)
+
+    def __call__(self, x, y, map, batch, size=None, speed=None):
+        return BubbleObject(self, x, y, batch, size, speed)
+
+    def on_collision(self, event: CollisionEvent):
+        event.player.add_effect(SpeedBoostEffect(7.5, event.scene, event.eventObject.size - 80))

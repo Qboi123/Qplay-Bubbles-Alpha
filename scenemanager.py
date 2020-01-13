@@ -52,10 +52,10 @@ class SceneManager(object):
         Scene.scene_manager = self
 
         # Add the defaults Scenes to the manager
-        self.add_scene(LoadingScene(self.window))
+        # self.add_scene(LoadingScene(self.window))
         self.add_scene(GameScene(self.window))
         # Activate the Menu Scene
-        self.change_scene("LoadingScene")
+        self.change_scene("GameScene")
 
     def add_scene(self, scene_instance):
         """Add a Scene instance to the manager.

@@ -1,29 +1,12 @@
 import os
 
-# noinspection PyCompatibility
 from compiler import Compiler
 
-"""
-Default:        |            | pyinstaller -y 
-First args:     | first_args | -F -w          -F = one file | -w = hides the console
-Icon:           | icon       | -i ICON
-Additional Data | add_data   | --add-data "<FILE_PATH>";"<EXPORT_FP>" --add-data "<FILE_PATH>";"<EXPORT_FP>" ...
-UPX Directory   | upx_dir    | --upx-dir UPX_DIR
-No Unicode Su...| no_unicode | -a
-Clean PyInsta...| clean      | --clean
-Log Level       | log_level  | --log-level DEBUG|INFO|WARN|ERROR|CRITICAL
-App Name        | app_name   | -n NAME
-
-"""
-
 if __name__ == '__main__':
-    # Main variables
-    # exclude_ = [".idea", ".gitattributes", ".gitignore", "build_config.json", "dll", "build.py", "README.md", "venv",
-    #             "output", "obj", "icon.png", ]
-    #
-    # icon_ = "./icon.ico"
-
+    # Get main folder
     main_folder_ = os.getcwd()
+
+    # Compiler class
     compiler = Compiler(
         exclude=[".idea", ".gitattributes", ".gitignore", "build_config.json", "dll", "build.py", "README.md",
                  "venv", "output", "obj", "icon.png", ".git", "assets/temp", "assets/sfx/GitHubDesktopSetup.exe",
@@ -35,6 +18,9 @@ if __name__ == '__main__':
         dlls=["dll/avcodec.dll", "dll/avcodec-58.dll", "dll/avutil-56.dll"])
     compiler.reindex()
 
+    # Get argument and command
     args = compiler.get_args()
     command = compiler.get_command(args)
+
+    # Compile workspace
     compiler.compile(command)

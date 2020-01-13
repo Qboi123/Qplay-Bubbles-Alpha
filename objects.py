@@ -1,4 +1,8 @@
+from pyglet.graphics import Batch
+from pyglet.window import Window
+
 import utils
+from events import CollisionEvent
 
 
 class Collidable(object):
@@ -25,5 +29,5 @@ class Collidable(object):
 
         return actual_distance <= collision_distance
 
-    def handle_collision_with(self, other_object):
+    def on_collision(self, event: CollisionEvent):
         pass

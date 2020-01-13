@@ -1,7 +1,12 @@
+import random
+
+from pyglet.graphics import Batch
 from pyglet.sprite import Sprite
+from pyglet.window import Window
 
 import globals as g
 import utils
+from events import CollisionEvent, DrawEvent, UpdateEvent, TickUpdateEvent
 from exceptions import UnlocalizedNameError
 from objects import Collidable
 from resources import Resources
@@ -11,7 +16,12 @@ from utils.classes import Position2D
 
 class Bubble(object):
     def __init__(self):
-        pass
+        self.speedMin: float = 1
+        self.speedMax: float = 1
+        self.scoreMultiplier: float = 0
+
+    def __call__(self, x, y, map, batch, size=None, speed=None):
+        return BubbleObject(self, x, y, batch, size, speed)
 
     def set_unlocalized_name(self, name):
         if not hasattr(g, "NAME2BUBBLE"):
@@ -31,6 +41,12 @@ class Bubble(object):
         else:
             raise UnlocalizedNameError("There are no unlocalized names defined!")
 
+    def on_collision(self, event: CollisionEvent):
+        pass
+
+    def on_tick_update(self, event: TickUpdateEvent):
+        pass
+
 
 class BubbleObject(Collidable):
     def __init__(self, base_class, x, y, batch, size, speed):
@@ -38,7 +54,7 @@ class BubbleObject(Collidable):
 
         self.scoreMultiplier = 0
 
-        self.baseBubbleClass = base_class
+        self.baseBubbleClass: Bubble = base_class
         self.name = self.baseBubbleClass.get_unlocalized_name()
 
         bub_resource = Resources.get_resource("bubbles", self.name)
@@ -48,7 +64,6 @@ class BubbleObject(Collidable):
         else:
             slowest = self.baseBubbleClass.speedMin
             speed = slowest
-        self.speed = speed
 
         if size:
             pass
@@ -57,9 +72,10 @@ class BubbleObject(Collidable):
             size = smallest
         image = Resources.get_resource("bubbles", self.name, size)
 
+        # Properties
+        self.speed = speed
         self.size = size
 
-        # print(image, x, y, batch)
         self.position: Position2D = Position2D((x, y))
 
         sprite: Sprite = Sprite(img=image, x=x, y=y, batch=batch)
@@ -67,49 +83,67 @@ class BubbleObject(Collidable):
 
         self.image = image
 
-    def draw(self):
-        self.sprite.update(self.sprite.x, self.sprite.y, self.sprite.rotation, self.sprite.scale,
-                           self.sprite.scale_x, self.sprite.scale_y)
-        # print("Draw")
+        DrawEvent.bind(self.draw)
+        UpdateEvent.bind(self.update)
+        CollisionEvent.bind(self.on_collision)
 
-    def update(self, dt, player):
-        # dx, dy = self.sprite.position
+    def draw(self, event):
+        pass
+        # self.sprite.update(self.sprite.x, self.sprite.y, self.sprite.rotation, self.sprite.scale,
+        #                    self.sprite.scale_x, self.sprite.scale_y)
 
-        # if self.baseBubbleClass.direction == WEST:
-        #     dx = self.baseBubbleClass.speed
-        # if self.baseBubbleClass.direction == EAST:
-        #     dx = self.baseBubbleClass.speed
-        # if self.baseBubbleClass.direction == NORTH:
-        #     dy = self.baseBubbleClass.speed
-        # if self.baseBubbleClass.direction == SOUTH:
-        #     dy = self.baseBubbleClass.speed
+    def update(self, event: UpdateEvent):
+        if not self.dead:
+            dx = -self.speed
+            dy = 0
 
-        dx = -self.speed
-        dy = 0
+            speed_multiply = event.player._score / 10000
+            if speed_multiply < 0.5:
+                speed_multiply = 0.5
 
-        speed_multiply = player._score / 10000
-        if speed_multiply < 0.5:
-            speed_multiply = 0.5
+            dx *= speed_multiply
 
-        dx *= speed_multiply
+            # noinspection PyUnboundLocalVariable
+            self.position += (dx * event.dt * utils.TICKS_PER_SEC, dy * event.dt * utils.TICKS_PER_SEC)
+            self.sprite.update(x=self.position.x, y=self.position.y)
 
-        # print(self.direction)
+    def on_collision(self, event: CollisionEvent):
+        if not self.dead:
+            if type(event.otherObject) == Player:
+                obj: Player = event.otherObject
+                obj.add_score(((self.size / 2) + (self.speed / utils.TICKS_PER_SEC / 7))
+                              * self.baseBubbleClass.scoreMultiplier)
 
-        # self.sprite.position = (x * dt, y * dt)
-        # noinspection PyUnboundLocalVariable
-        self.position += (dx * dt * utils.TICKS_PER_SEC, dy * dt * utils.TICKS_PER_SEC)
-        self.sprite.update(x=self.position.x, y=self.position.y)
-        # print("Update")
+                if hasattr(self.baseBubbleClass, "on_collision"):
+                    self.baseBubbleClass.on_collision(event)
 
-    def handle_collision_with(self, other_object):
-        if type(other_object) == Player:
-            other_object: Player
+                self.dead = True
 
-            # print("%s has collision with %s" % (repr(self), repr(other_object)))
-            other_object.add_score(((self.size / 2) + (self.speed / utils.TICKS_PER_SEC / 7))
-                                   * self.baseBubbleClass.scoreMultiplier)
+    def on_tick_update(self, event: TickUpdateEvent):
+        if not self.dead:
+            if hasattr(self.baseBubbleClass, "on_tick_update"):
+                self.baseBubbleClass.on_tick_update(event)
 
-            if hasattr(self.baseBubbleClass, "on_collision"):
-                self.baseBubbleClass.on_collision(other_object)
+    def unbind_events(self):
+        DrawEvent.unbind(self.draw)
+        UpdateEvent.unbind(self.update)
+        CollisionEvent.unbind(self.on_collision)
 
-            self.dead = True
+
+class BubblePriorityCalculator(object):
+    bubbles: dict = dict()
+    totalPriority: int = 0
+
+    @classmethod
+    def add(cls, bubble, priority):
+        cls.totalPriority += priority
+        cls.bubbles[bubble] = (cls.totalPriority - priority, cls.totalPriority)
+
+    @classmethod
+    def get(cls, random=random):
+        rand = random.randint(0, cls.totalPriority)
+
+        for bubble, priority in cls.bubbles.items():
+            priority_min, priority_max = priority
+            if priority_min <= rand <= priority_max:
+                return bubble

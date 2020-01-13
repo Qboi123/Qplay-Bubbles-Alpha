@@ -50,7 +50,7 @@ class Resources(object):
         # self.batch.draw()
         # self.infoLabel.draw()
 
-    def __init__(self, scene):
+    def __init__(self):
         _pyglet.resource.path = ['./assets']
         # self.label = label
         # self.scene = scene
