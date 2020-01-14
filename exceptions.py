@@ -15,9 +15,9 @@ class UnresolvedValueError(Exception):
 class Warning(Warning):
     def __init__(self, *args):
         super(Warning, self).__init__(*args)
-        print("\nWarning traceback (most recent call last):", file=sys.stderr)
-        traceback.print_stack(self.__traceback__, file=sys.stderr)
-        traceback.print_exception(self, self, self.__traceback__, file=sys.stderr)
+        print("\nWarning traceback (most recent call last):", file=sys.stdwrn)
+        traceback.print_stack(self.__traceback__, file=sys.stdwrn)
+        traceback.print_exception(self, self, self.__traceback__, file=sys.stdwrn)
 
 
 class TextureWarning(Warning):

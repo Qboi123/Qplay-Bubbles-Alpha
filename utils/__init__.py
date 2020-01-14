@@ -40,7 +40,7 @@ FALSE = False
 
 def randint_lookup(value_in, min_, max_):
     # value_in2 = (value_in / 2) + 0.5
-    sys.stderr.write(str(value_in2) + " ")
+    sys.stderr.write(str(value_in) + " ")
     value_in2 = value_in
     return int(round(value_in2 * (max_ - min_) + min_))
 

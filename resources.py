@@ -128,17 +128,20 @@ class Resources(object):
                     bubble_data["type"], os.path.join("assets/models/bubbles", bubble_id + ".json").replace("\\", "/")))
 
         # Adding the different resolutions to the bubbles
-        for i in range(_min, _max + 1):
-            self.status = "Loading size index: %s (between %s and %s) for all bubbles" % (i, _min, _max)
 
-            for bubble_id, bubble_data in data.items():
-                if bubble_data["type"] == model_types[0]:
+        for bubble_id, bubble_data in data.items():
+            self.status = f"Loading bubble '{bubble_id}'"
+
+            if bubble_data["type"] == model_types[0]:
+                for i in range(_min, _max + 1):
                     bub[bubble_id][i] = utils.createbubble_image(
                         (i, i), bubble_data["inner"] if "inner" in bubble_data.keys() else None, *bubble_data["colors"]
                     )
                     center_image(bub[bubble_id][i])
-                elif bubble_data["type"] == model_types[1]:
-                    bub[bubble_id][i] = _pyglet.resource.image(os.path.join("textures", bubble_data).replace("\\", "/"))
+            elif bubble_data["type"] == model_types[1]:
+                image = _pyglet.resource.image(os.path.join("textures/bubbles", bubble_data["texture"] +
+                                                            ".png").replace("\\", "/"))
+                bub[bubble_id][image.width] = image
 
         # print("Bubble dictionary: %s" % bub)
         # bub["normal_bubble"][i] = utils.createbubble_image((i, i), None, "white")
@@ -237,6 +240,8 @@ class Resources(object):
             a = exceptions.TextureWarning("Resource %s is not found" % resource_text)
             # a.__traceback__
             if resource_recursion[0] == "bubbles" or resource_recursion[0] == "player":
+                if len(resource_recursion) == 3:
+                    return cls.no_image_circle
                 return {j: cls.no_image_circle for j in range(21, 81)}
             return cls.no_image
 

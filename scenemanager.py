@@ -37,7 +37,8 @@ from map.savemanager import SaveManager
 class SceneManager(object):
     """A class to handle switching between Scenes instances."""
 
-    def __init__(self, window):
+    def __init__(self, window, init):
+        self.init = init
         self.window = window
 
         # Save data is accessible from all Scenes
@@ -50,6 +51,8 @@ class SceneManager(object):
 
         # All Scenes will have a reference to the manager
         Scene.scene_manager = self
+
+        init.init()
 
         # Add the defaults Scenes to the manager
         # self.add_scene(LoadingScene(self.window))

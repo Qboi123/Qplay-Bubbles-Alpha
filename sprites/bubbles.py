@@ -1,13 +1,6 @@
-from pyglet.graphics import Batch
-from pyglet.window import Window
-
-import resources
 from bubble import BubbleObject, Bubble, BubblePriorityCalculator
-from effects import TeleportingEffect, SpeedBoostEffect
+from effects import TeleportingEffect, SpeedBoostEffect, SlownessEffect, ScoreStatusEffect, GhostEffect, ParalisEffect
 from events import CollisionEvent
-from init import Effects
-from sprites.objects import PhysicalObject
-from sprites.player import Player
 
 
 class NormalBubble(Bubble):
@@ -97,7 +90,7 @@ class DeadlyBubble(Bubble):
         self.speedMax = 19
         self.scoreMultiplier = 3
 
-        BubblePriorityCalculator.add(self, 50000)
+        BubblePriorityCalculator.add(self, 75000)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
         return BubbleObject(self, x, y, batch, size, speed)
@@ -140,7 +133,7 @@ class TeleporterBubble(Bubble):
         return BubbleObject(self, x, y, batch, size, speed)
 
     def on_collision(self, event: CollisionEvent):
-        event.player.add_effect(TeleportingEffect(5, event.scene, event.eventObject.size - 80))
+        event.player.add_effect(TeleportingEffect(5, event.scene, event.eventObject.size / 40))
 
 
 class SpeedBoostBubble(Bubble):
@@ -158,4 +151,101 @@ class SpeedBoostBubble(Bubble):
         return BubbleObject(self, x, y, batch, size, speed)
 
     def on_collision(self, event: CollisionEvent):
-        event.player.add_effect(SpeedBoostEffect(7.5, event.scene, event.eventObject.size - 80))
+        event.player.add_effect(SpeedBoostEffect(7, event.scene, event.eventObject.size / 40))
+
+
+class SlownessBubble(Bubble):
+    def __init__(self):
+        super(SlownessBubble, self).__init__()
+
+        self.set_unlocalized_name("slowness_bubble")
+        self.speedMin = 18
+        self.speedMax = 29
+        self.scoreMultiplier = 0.875
+
+        BubblePriorityCalculator.add(self, 5000)
+
+    def __call__(self, x, y, map, batch, size=None, speed=None):
+        return BubbleObject(self, x, y, batch, size, speed)
+
+    def on_collision(self, event: CollisionEvent):
+        event.player.add_effect(SlownessEffect(8, event.scene, event.eventObject.size / 60))
+
+
+class UltraBubble(Bubble):
+    def __init__(self):
+        super(UltraBubble, self).__init__()
+
+        self.set_unlocalized_name("ultra_bubble")
+        self.speedMin = 47
+        self.speedMax = 59
+        self.scoreMultiplier = 10
+
+        BubblePriorityCalculator.add(self, 0)
+
+    # noinspection PyUnusedLocal
+    def __call__(self, x, y, map, batch, size=None, speed=None):
+        return BubbleObject(self, x, y, batch, 48, speed)
+
+    def on_collision(self, event: CollisionEvent):
+        event.player.add_effect(ScoreStatusEffect(10, event.scene, 10))
+
+
+class GhostBubble(Bubble):
+    def __init__(self):
+        super(GhostBubble, self).__init__()
+
+        self.set_unlocalized_name("ghost_bubble")
+        self.speedMin = 47
+        self.speedMax = 59
+        self.scoreMultiplier = 10
+
+        BubblePriorityCalculator.add(self, 2500)
+
+    # noinspection PyUnusedLocal
+    def __call__(self, x, y, map, batch, size=None, speed=None):
+        return BubbleObject(self, x, y, batch, size, speed)
+
+    def on_collision(self, event: CollisionEvent):
+        # pass
+        event.player.add_effect(GhostEffect(6, event.scene))
+
+
+class ParalyseBubble(Bubble):
+    def __init__(self):
+        super(ParalyseBubble, self).__init__()
+
+        self.set_unlocalized_name("paralyse_bubble")
+        self.speedMin = 24
+        self.speedMax = 37
+        self.scoreMultiplier = 10
+
+        BubblePriorityCalculator.add(self, 7500)
+
+    # noinspection PyUnusedLocal
+    def __call__(self, x, y, map, batch, size=None, speed=None):
+        return BubbleObject(self, x, y, batch, size, speed)
+
+    def on_collision(self, event: CollisionEvent):
+        # pass
+        event.player.add_effect(ParalisEffect(6, event.scene))
+
+
+class ConfusionBubble(Bubble):
+    def __init__(self):
+        super(ConfusionBubble, self).__init__()
+
+        self.set_unlocalized_name("confusion_bubble")
+        self.speedMin = 24
+        self.speedMax = 37
+        self.scoreMultiplier = 10
+
+        BubblePriorityCalculator.add(self, 30303)
+
+    # noinspection PyUnusedLocal
+    def __call__(self, x, y, map, batch, size=None, speed=None):
+        return BubbleObject(self, x, y, batch, size, speed)
+
+    def on_collision(self, event: CollisionEvent):
+        # pass
+        event.player.add_effect(ConfusionEffect(6, event.scene))

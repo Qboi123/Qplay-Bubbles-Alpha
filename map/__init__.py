@@ -52,7 +52,7 @@ class Map(object):
         for bubble in self.bubbles:
             if bubble.position.x < (0 - bubble.size / 2):
                 self.remove_bubble(bubble, event.gameObjects)
-            if bubble.dead:
+            elif bubble.dead:
                 self.remove_bubble(bubble, event.gameObjects)
 
     def tick_update(self, event: TickUpdateEvent):

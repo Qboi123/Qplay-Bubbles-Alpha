@@ -3,6 +3,8 @@ import sys
 from pyglet.graphics import Batch
 from pyglet.window import Window
 
+from utils.classes import Position2D
+
 
 class Event(object):
     _handlers = list()
@@ -30,7 +32,7 @@ class Event(object):
     @classmethod
     def unbind(cls, func):
         cls._handlers.remove(func)
-        print(f"Unbind: {func.__name__}")
+        # print(f"Unbind: {func.__name__}")
         return func
 
 
@@ -59,7 +61,8 @@ class CollisionEvent(Event):
         if handler_:
             handler_(self)
         else:
-            print(f"ERROR Handler not found", file=sys.stderr)
+            pass
+            # print(f"ERROR Handler not found", file=sys.stderr)
 
     @classmethod
     def bind(cls, func):
@@ -70,7 +73,7 @@ class CollisionEvent(Event):
     @classmethod
     def unbind(cls, func):
         cls._handlers.remove(func)
-        print(f"Unbind: {func.__name__}")
+        # print(f"Unbind: {func.__name__}")
         return func
 
 
@@ -100,7 +103,8 @@ class PlayerCollisionEvent(CollisionEvent):
         if handler_:
             handler_(self)
         else:
-            print(f"ERROR Handler not found", file=sys.stderr)
+            pass
+            # print(f"ERROR Handler not found", file=sys.stderr)
 
     @classmethod
     def bind(cls, func):
@@ -110,8 +114,11 @@ class PlayerCollisionEvent(CollisionEvent):
 
     @classmethod
     def unbind(cls, func):
-        cls._handlers.remove(func)
-        print(f"Unbind: {func.__name__}")
+        try:
+            cls._handlers.remove(func)
+        except ValueError as e:
+            raise ValueError(f"Handler '{func.__name__ if type(func) == type and not hasattr(func,'__class__') else func.__class__.__name__ if func.__class__.__name__ != 'method' else func.__name__}' can't be unbinded: {e.args[0]}")
+        # print(f"Unbind: {func.__name__}")
         return func
     
 
@@ -126,13 +133,13 @@ class TickUpdateEvent(Event):
     @classmethod
     def bind(cls, func):
         cls._handlers.append(func)
-        print(func)
+        # print(func)
         return func
 
     @classmethod
     def unbind(cls, func):
         cls._handlers.remove(func)
-        print(f"Unbind: {func.__name__}")
+        # print(f"Unbind: {func.__name__}")
         return func
 
 
@@ -145,13 +152,60 @@ class DrawEvent(Event):
     @classmethod
     def bind(cls, func):
         cls._handlers.append(func)
-        print(func)
+        # print(f"Bind: {func.__name__}")
         return func
 
     @classmethod
     def unbind(cls, func):
         cls._handlers.remove(func)
-        print(f"Unbind: {func.__name__}")
+        # print(f"Unbind: {func.__name__}")
+        return func
+
+
+class KeyEvent(Event):
+    _handlers = list()
+
+    def __init__(self, key, modifiers, type_, scene):
+        self.key = key
+        self.modifiers = modifiers
+        self.eventType = type_
+        super(KeyEvent, self).__init__(scene)
+
+    @classmethod
+    def bind(cls, func):
+        cls._handlers.append(func)
+        # print(f"Bind: {func.__name__}")
+        return func
+
+    @classmethod
+    def unbind(cls, func):
+        cls._handlers.remove(func)
+        # print(f"Unbind: {func.__name__}")
+        return func
+
+
+class MouseEvent(Event):
+    _handlers = list()
+
+    def __init__(self, x, y, type_, scene, button=None):
+        self.x = x
+        self.y = y
+        self.pos = Position2D((x, y))
+
+        self.button = button
+        self.eventType = type_
+        super(MouseEvent, self).__init__(scene)
+
+    @classmethod
+    def bind(cls, func):
+        cls._handlers.append(func)
+        # print(f"Bind: {func.__name__}")
+        return func
+
+    @classmethod
+    def unbind(cls, func):
+        cls._handlers.remove(func)
+        # print(f"Unbind: {func.__name__}")
         return func
 
 
@@ -165,13 +219,33 @@ class UpdateEvent(Event):
     @classmethod
     def bind(cls, func):
         cls._handlers.append(func)
-        print(func)
+        # print(f"Bind: {func.__name__}")
         return func
 
     @classmethod
     def unbind(cls, func):
         cls._handlers.remove(func)
-        print(f"Unbind: {func.__name__}")
+        # print(f"Unbind: {func.__name__}")
+        return func
+
+
+class AutoSaveEvent(Event):
+    _handlers = list()
+
+    def __init__(self, dt, scene):
+        self.dt = dt
+        super(AutoSaveEvent, self).__init__(scene)
+
+    @classmethod
+    def bind(cls, func):
+        cls._handlers.append(func)
+        # print(f"Bind: {func.__name__}")
+        return func
+
+    @classmethod
+    def unbind(cls, func):
+        cls._handlers.remove(func)
+        # print(f"Unbind: {func.__name__}")
         return func
 
 
@@ -185,13 +259,13 @@ class EffectEvent(Event):
     @classmethod
     def bind(cls, func):
         cls._handlers.append(func)
-        print(func)
+        # print(func)
         return func
 
     @classmethod
     def unbind(cls, func):
         cls._handlers.remove(func)
-        print(f"Unbind: {func.__name__}")
+        # print(f"Unbind: {func.__name__}")
         return func
 
 
@@ -204,13 +278,13 @@ class EffectStoppedEvent(EffectEvent):
     @classmethod
     def bind(cls, func):
         cls._handlers.append(func)
-        print(func)
+        # print(func)
         return func
 
     @classmethod
     def unbind(cls, func):
         cls._handlers.remove(func)
-        print(f"Unbind: {func.__name__}")
+        # print(f"Unbind: {func.__name__}")
         return func
 
 
@@ -223,13 +297,13 @@ class EffectStartedEvent(EffectEvent):
     @classmethod
     def bind(cls, func):
         cls._handlers.append(func)
-        print(func)
+        # print(func)
         return func
 
     @classmethod
     def unbind(cls, func):
         cls._handlers.remove(func)
-        print(f"Unbind: {func.__name__}")
+        # print(f"Unbind: {func.__name__}")
         return func
 
 
@@ -243,11 +317,68 @@ class EffectUpdateEvent(EffectEvent):
     @classmethod
     def bind(cls, func):
         cls._handlers.append(func)
-        print(func)
+        # print(func)
         return func
 
     @classmethod
     def unbind(cls, func):
         cls._handlers.remove(func)
-        print(f"Unbind: {func.__name__}")
+        # print(f"Unbind: {func.__name__}")
         return func
+
+
+class EffectTickUpdateEvent(EffectEvent):
+    _handlers = list()
+
+    def __init__(self, dt, effect, scene):
+        self.dt = dt
+        super(EffectTickUpdateEvent, self).__init__(effect, scene)
+
+    @classmethod
+    def bind(cls, func):
+        cls._handlers.append(func)
+        # print(func)
+        return func
+
+    @classmethod
+    def unbind(cls, func):
+        cls._handlers.remove(func)
+        # print(f"Unbind: {func.__name__}")
+        return func
+
+
+class ScoreEvent(Event):
+    _handlers = list()
+    _handlers_params = {"cancel_score": []}
+    cancel_score = False
+
+    def __init__(self, score, scene):
+        self.score = score
+        super(ScoreEvent, self).__init__(scene)
+
+    @classmethod
+    def bind(cls, func, cancel_score=False):
+        cls._handlers.append(func)
+        if cancel_score:
+            cls._handlers_params["cancel_score"].append(func)
+            cls.cancel_score = True
+        # print(func)
+        return func
+
+    @classmethod
+    def unbind(cls, func):
+        cls._handlers.remove(func)
+        if func in cls._handlers_params["cancel_score"]:
+            if len(cls._handlers_params["cancel_score"]) == 1:
+                cls.cancel_score = False
+            cls._handlers_params["cancel_score"].remove(func)
+        # print(f"Unbind: {func.__name__}")
+        return func
+
+    # noinspection PyProtectedMember
+    def add_score(self, score):
+        self.player._add_score(score)
+
+    # noinspection PyProtectedMember
+    def remove_score(self, score):
+        self.player._remove_score(score)

@@ -30,8 +30,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from random import Random
+
 from pyglet.graphics import Batch
-from typing import Dict, Tuple, Union
+from typing import Dict, Tuple, Union, Type, List
 
 import pyglet
 import pickle
@@ -44,6 +46,8 @@ from time import gmtime, strftime
 
 # from block import Block
 from bubble import BubbleObject
+from effects import AppliedEffect
+from events import AutoSaveEvent
 from sprites.player import Player
 from map import Map
 
@@ -59,7 +63,8 @@ class SaveManager(object):
         """
 
         # Get the appropriate OS specific save path:
-        self.save_path = pyglet.resource.get_settings_path('Infinicraft')
+        self.save_path = pyglet.resource.get_settings_path('Qplay Bubbles')
+        print(f"Save Path: {self.save_path}")
         self.save_file = 'save{}.dat'
         self.config_file = 'config.json'
         self.save_slot = 0
@@ -67,6 +72,8 @@ class SaveManager(object):
         self._data = {'revision': 0,
                       'options': {},
                       'inventory': {}}
+
+        AutoSaveEvent.bind(self.save_save)
 
     @staticmethod
     def timestamp_print(txt):
@@ -77,35 +84,57 @@ class SaveManager(object):
         save_file = self.save_file.format(self.save_slot)
         return os.path.exists(os.path.join(self.save_path, save_file))
 
-    def load_save(self, map_: Map, player: Player, batch: Batch):
+    def load_save(self, scene):
+        # Initialize loading save
         save_file = self.save_file.format(self.save_slot)
         save_file_path = os.path.join(self.save_path, save_file)
         self.timestamp_print('start loading')
 
         try:
+            # Load file
             with open(save_file_path, 'rb') as file:
-                loaded_save: Dict[str, Union[Player, Dict[Tuple[int, int], BubbleObject]]] = pickle.load(file)
+                loaded_save: Dict[str, Union[List[Tuple], Tuple, Random]] = pickle.load(file)
 
-            for position, bubble in loaded_save["save"].items():
-                if bubble.name == "normal_bubble":
-                    map_.create_bubble(position[0], position[1], g.NAME2BUBBLE[bubble.name], batch, bubble.size)
-                else:
-                    map_.add_block(position, bubble, immediate=False)
+            print(f"Loaded Save Data: {loaded_save}")
 
-            x, y = loaded_save["player"].player_position
+            # Bubbles
+            for name, size, speed, position in loaded_save["bubbles"]:
+                scene.game_objects.append(scene.map.create_bubble(position.x, position.y, g.NAME2BUBBLE[name], scene.batch, size, speed))
 
-            # player.set_flight(loaded_save["player"].flying)
-            player.player_position = (x, y + 2)
-            player.rotation = loaded_save["player"].rotation
+            # Player
+            lives = loaded_save["player"][0][0]
+            score = loaded_save["player"][0][1]
 
+            pos = loaded_save["player"][0][2]
+            rot = loaded_save["player"][0][3]
+
+            ghost_mode = loaded_save["player"][0][4]
+
+            scene.player._Player__position = pos
+            scene.player.rotation = rot
+            scene.player._score = score
+            scene.player._lives = lives
+            scene.player.ghostMode = ghost_mode
+
+            scene.player.refresh()
+
+            # Effects
+            for effect, time, strength in loaded_save["effects"]:
+                effect: AppliedEffect
+                scene.player.add_effect(effect.__class__(time, scene, strength))
+
+            # Random
+            scene.random.setstate(loaded_save["random"])
+
+            # Completed
             self.timestamp_print('Loading completed.')
             return True
         except Exception as e:     # If loading fails for ANY reason, return False
             self.timestamp_print('Loading failed! Generating a new map.')
-            self.timestamp_print(e.__class__.__name__+": "+e.args[0])
+            self.timestamp_print(e.__class__.__name__+": "+e.__str__())
             return False
 
-    def save_save(self, save: Map, player: Player):
+    def save_save(self, event: AutoSaveEvent):
         save_file = self.save_file.format(self.save_slot)
         save_file_path = os.path.join(self.save_path, save_file)
         self.timestamp_print('start saving')
@@ -113,14 +142,26 @@ class SaveManager(object):
         # If the save directory doesn't exist, create it
         if not os.path.exists(self.save_path):
             self.timestamp_print(
-                'creating directory: {}'.format(self.save_path))
+                'Creating directory: {}'.format(self.save_path))
             os.mkdir(self.save_path)
 
         # Efficiently save the save to a binary file
-        with open(save_file_path, 'wb') as file:
-            pickle.dump({"player": player, "save": save._save}, file)
+        with open(save_file_path, 'wb+') as file:
+            # noinspection PyProtectedMember,SpellCheckingInspection
+            pickle.dump({"player": [(event.player._lives, event.player._score, event.player._Player__position, event.player.rotation, event.player.ghostMode)],
+                         "bubbles": [(bubbleobject.name,
+                                      bubbleobject.size,
+                                      bubbleobject.speed,
+                                      bubbleobject.position
+                                      ) for bubbleobject in event.map.bubbles],
+                         "random": event.scene.random.getstate(),
+                         "effects": [(effect,
+                                      effect._get_time_remaining(),
+                                      effect.strengthMultiply
+                                      ) for effect in event.player.activeEffects]
+                         }, file)
 
-        self.timestamp_print('saving completed')
+        self.timestamp_print('Saving completed')
 
     def __getitem__(self, item):
         return self._data.get(item)

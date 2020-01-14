@@ -1,4 +1,4 @@
-import random
+from random import Random
 from collections import deque
 from typing import List, Any, Union, Optional
 
@@ -8,7 +8,7 @@ from pyglet.media import Player as MediaPlayer
 from pyglet.text import Label
 from pyglet.window import key
 
-from events import CollisionEvent, UpdateEvent, DrawEvent, TickUpdateEvent
+from events import CollisionEvent, UpdateEvent, DrawEvent, TickUpdateEvent, PlayerCollisionEvent, AutoSaveEvent
 from map import Map
 from objects import Collidable
 from resources import Resources
@@ -19,7 +19,7 @@ class AudioEngine:
     """A high level audio engine for easily playing SFX and Music."""
 
     # noinspection PySameParameterValue
-    def __init__(self, channels=5):
+    def __init__(self, channels=16):
         self.sfx_players = deque([MediaPlayer() for _ in range(channels)], maxlen=channels)
         self.music_player = MediaPlayer()
 
@@ -94,7 +94,9 @@ class GameScene(Scene):
         self.game_objects: List[Union[Any, Collidable]] = list()
         self.map: Optional[Map] = None
         self.fps: Optional[Label] = None
-        self.random = random.Random(4096)
+        self.random = Random(4096)
+
+        self.motionKeys = [key.LEFT, key.RIGHT, key.DOWN, key.UP]
 
         self.fps_text: Optional[str] = None
 
@@ -103,12 +105,16 @@ class GameScene(Scene):
         self.player_mpx_strafe = 0
 
     def init_scene(self):
-        self.player: Player = Player((self.window.height / 2, self.window.width / 2), self.window, self.batch)
+        self.player: Player = Player((self.window.height / 2, self.window.width / 2), self)
         self.game_objects.append(self.player)
         self.map: Map = Map()
         self.fps: Label = Label("0 FPS", "helverica", 14, False, True, x=self.window.width, y=self.window.height,
                                 width=self.window.width, anchor_x="right", anchor_y="top", align="right",
                                 multiline=False, batch=self.batch)
+        if not self.scene_manager.save.load_save(self):
+            self.random = Random(4096)
+
+        self.player.refresh()
         self.fps_text = "FPS: 0"
 
     def on_draw(self):
@@ -130,26 +136,26 @@ class GameScene(Scene):
 
     # noinspection PyUnusedLocal
     def on_key_press(self, symbol, modifiers):
-        if symbol == key.LEFT:
+        if symbol == self.motionKeys[0]:
             self.player_rot_strafe -= 5
-        if symbol == key.RIGHT:
+        if symbol == self.motionKeys[1]:
             self.player_rot_strafe += 5
 
-        if symbol == key.DOWN:
+        if symbol == self.motionKeys[2]:
             self.player_mpx_strafe += 10
-        if symbol == key.UP:
+        if symbol == self.motionKeys[3]:
             self.player_mpx_strafe -= 10
 
     # noinspection PyUnusedLocal
     def on_key_release(self, symbol, modifiers):
-        if symbol == key.LEFT:
+        if symbol == self.motionKeys[0]:
             self.player_rot_strafe += 5
-        if symbol == key.RIGHT:
+        if symbol == self.motionKeys[1]:
             self.player_rot_strafe -= 5
 
-        if symbol == key.DOWN:
+        if symbol == self.motionKeys[2]:
             self.player_mpx_strafe -= 10
-        if symbol == key.UP:
+        if symbol == self.motionKeys[3]:
             self.player_mpx_strafe += 10
 
     def update(self, dt):
@@ -164,35 +170,28 @@ class GameScene(Scene):
                 # Make sure the objects haven't already been killed
                 if not obj_1.dead and not obj_2.dead:
                     if obj_1.collides_with(obj_2):
-                        # obj_1.on_collision(CollisionEvent(obj_1, obj_2, self.window, self.batch, self.map, self.game_objects))
                         CollisionEvent(obj_1, obj_2, self)
-                        # if isinstance(obj_1, Player):
-                        #     obj_1.handle_event(
-                        #         CollisionEvent(obj_1, obj_2, self.window, self.batch, self.map, self.game_objects))
+                        if isinstance(obj_1, Player):
+                            PlayerCollisionEvent(obj_1, obj_2, self)
                         CollisionEvent(obj_2, obj_1, self)
-                        # obj_2.on_collision(CollisionEvent(obj_2, obj_1, self.window, self.batch, self.map, self.game_objects))
                         self.fps_text = "FPS: %s" % round(1 / dt, 1)
 
         if self.player_rot_strafe:
             self.player.rotate(dt, self.player_rot_strafe)
-            # self.player_rot_strafe = 0
 
         if self.player_mpx_strafe:
             self.player.move_pixels(dt, self.player_mpx_strafe)
-            # self.player_mpx_strafe = 0
 
         UpdateEvent(dt, self)
-        # self.player.update(dt, self.window, self.batch)
-        # self.map.update(dt, self.window, self.batch, self.game_objects, self.player)
 
     def tick_update(self, dt):
         # self.map.tick_update(dt, self.window, self.batch, self.game_objects)
-        TickUpdateEvent(dt, self)
         self.fps.text = self.fps_text
+        TickUpdateEvent(dt, self)
 
     # noinspection PyUnusedLocal
     def auto_save_update(self, dt):
-        self.scene_manager.save.save_save(self.map, self.player)
+        AutoSaveEvent(dt, self)
 
 
 # noinspection PyUnusedClass,PySameParameterValue

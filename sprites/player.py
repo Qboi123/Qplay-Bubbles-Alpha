@@ -1,43 +1,40 @@
 from time import time
-
-import pyglet
 from typing import Tuple, Union, List, Dict
 
-from pyglet.graphics import Batch
 from pyglet.text import Label
-from pyglet.window import Window
 
-from events import CollisionEvent, UpdateEvent, TickUpdateEvent, DrawEvent
+from events import CollisionEvent, UpdateEvent, TickUpdateEvent, DrawEvent, ScoreEvent
 from objects import Collidable
 from resources import Resources
 from sprites.objects import PhysicalObject
-from utils import PLAYER_SPEED
 from utils.classes import Position2D
 
 
-# noinspection PySameParameterValue
+# noinspection PySameParameterValue,PyUnusedClass
 class Player(Collidable):
-    def __init__(self, pos: Tuple[float, float], window, batch):
+    def __init__(self, pos: Tuple[float, float], scene):
         """
         The player, is the main character in the game. You can control him with the arrows.
         :param pos:
-        :param window:
+        :param scene.window:
         :param batch:
         """
+        
+        self.scene = scene
         # self.position = pos
-        sprite = PhysicalObject(img=Resources.get_resource("player"), batch=batch, subpixel=True)
+        sprite = PhysicalObject(img=Resources.get_resource("player"), batch=scene.batch, subpixel=True)
 
         super(Player, self).__init__(sprite)
 
-        self.statsLabel = Label("Not loaded yet", "Helvetica", 16, anchor_x="left", anchor_y="top", batch=batch, x=0,
-                                y=window.height, multiline=True, width=window.width, bold=True)
+        self.statsLabel = Label("Not loaded yet", "Helvetica", 16, anchor_x="left", anchor_y="top", batch=scene.batch, x=0,
+                                y=scene.window.height, multiline=True, width=scene.window.width, bold=True)
 
         self.gameOverText = Label("", "Helvetica", 36, anchor_x="center", anchor_y="baseline", align="center",
-                                  batch=batch, x=window.width / 2, y=window.height / 2 - 50, multiline=True,
-                                  width=window.width, color=(255, 0, 0, 255), bold=True)
+                                  batch=scene.batch, x=scene.window.width / 2, y=scene.window.height / 2 - 50, multiline=True,
+                                  width=scene.window.width, color=(255, 0, 0, 255), bold=True)
         self.gameOverInfo = Label("", "Helvetica", 22, anchor_x="center", anchor_y="top", align="center",
-                                  batch=batch, x=window.width / 2, y=window.height / 2 - 50, multiline=True,
-                                  width=window.width, color=(255, 127, 127, 255), bold=True)
+                                  batch=scene.batch, x=scene.window.width / 2, y=scene.window.height / 2 - 50, multiline=True,
+                                  width=scene.window.width, color=(255, 127, 127, 255), bold=True)
 
         self.motionSpeedMultiply: int = 1
         self.rotationSpeedMultiply: int = 1
@@ -48,12 +45,17 @@ class Player(Collidable):
 
         self.activeEffects = list()
 
+        self.ghostMode = False
+
         self.__position: Position2D = Position2D(pos)
 
         DrawEvent.bind(self.draw)
         UpdateEvent.bind(self.update)
         TickUpdateEvent.bind(self.tick_update)
         CollisionEvent.bind(self.on_collision)
+
+    def refresh(self):
+        self.sprite.update(rotation=self.rotation, x=self.__position.x, y=self.__position.y)
 
     def add_effect(self, effect):
         if not effect.dead:
@@ -85,9 +87,6 @@ class Player(Collidable):
     def update(self, event: UpdateEvent):
         """
         Update event
-        :param dt:
-        :param window:
-        :param batch:
         :return:
         """
         if self._lives <= 0:
@@ -112,6 +111,7 @@ class Player(Collidable):
                     self.gameOverText.draw()
                     self.gameOverInfo.draw()
         else:
+            # print(f"ActiveEffects: {[i.dead for i in self.activeEffects]}")
             for effect in self.activeEffects:
                 if effect.dead:
                     self.activeEffects.remove(effect)
@@ -122,7 +122,7 @@ class Player(Collidable):
         #     pass
         # else:
         #     for effect in self.activeEffects:
-        #         effect.tick_update(dt, window, batch, self)
+        #         effect.tick_update(dt, scene.window, batch, self)
 
     def damage(self, lives):
         """
@@ -162,7 +162,7 @@ class Player(Collidable):
         if not self.dead:
             self.sprite.update(x=self.__position.x, y=self.__position.y)
 
-    def remove_score(self, value):
+    def _remove_score(self, value):
         """
         Removes score, from the player
 
@@ -171,7 +171,7 @@ class Player(Collidable):
         """
         self._score -= int(value)
 
-    def add_score(self, value):
+    def _add_score(self, value):
         """
         Adding score to the player
 
@@ -179,6 +179,16 @@ class Player(Collidable):
         :return:
         """
         self._score += int(value)
+
+    def remove_score(self, value):
+        if not ScoreEvent.cancel_score:
+            self._remove_score(value)
+        ScoreEvent(-value, self.scene)
+        
+    def add_score(self, value):
+        if not ScoreEvent.cancel_score:
+            self._add_score(value)
+        ScoreEvent(value, self.scene)
 
     def move_pixels(self, dt, pixels):
         """
@@ -188,17 +198,30 @@ class Player(Collidable):
         :param pixels:
         :return:
         """
-        import math
-
-        d = dt * pixels  # distance covered this tick.
-        angle_radians = -math.radians(-self.rotation)
-        dx = -math.cos(angle_radians)
-        dy = math.sin(angle_radians)
-
-        dx, dy = dx * d * 10, dy * d * 10
-
-        self.__position += (dx * self.motionSpeedMultiply, dy * self.motionSpeedMultiply)
         if not self.dead:
+            import math
+
+            d = dt * pixels  # distance covered this tick.
+            angle_radians = -math.radians(-self.rotation)
+            dx = -math.cos(angle_radians)
+            dy = math.sin(angle_radians)
+
+            dx, dy = dx * d * 10, dy * d * 10
+
+            position = self.__position + (dx * self.motionSpeedMultiply, dy * self.motionSpeedMultiply)
+
+            if self.sprite.width / 2 < position.x < self.scene.window.width - self.sprite.width / 2:
+                self.__position.x = position.x
+            elif not self.sprite.width / 2 < position.x:
+                self.__position.x = self.sprite.width / 2
+            elif not position.x < self.scene.window.width - self.sprite.width / 2:
+                self.__position.x = self.scene.window.width - self.sprite.width / 2
+            if self.sprite.height / 2 < position.y < self.scene.window.height - self.sprite.height / 2:
+                self.__position.y = position.y
+            elif not self.sprite.height / 2 < position.y:
+                self.__position.y = self.sprite.height / 2
+            elif not position.y < self.scene.window.height - self.sprite.height / 2:
+                self.__position.y = self.scene.window.height - self.sprite.height / 2
             self.sprite.update(x=self.__position.x, y=self.__position.y)
 
     def handle_event(self, event):
@@ -215,14 +238,12 @@ class Player(Collidable):
         """
         Collision event handler
 
-        :param window:
-        :param batch:
         :param event:
         :return:
         """
-        # self.on_collision(event.window, event.batch, event.otherObject)
+        # self.on_collision(event.scene.window, event.batch, event.otherObject)
         # for effect in self.activeEffects:
-        #     effect.on_player_collision(event.window, event.batch, self, event.otherObject)
+        #     effect.on_player_collision(event.scene.window, event.batch, self, event.otherObject)
 
     def move_to(self, x, y):
         """

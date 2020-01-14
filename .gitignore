@@ -17,3 +17,4 @@ gen
 /venv/
 /build.py
 /build_config.json
+*.log

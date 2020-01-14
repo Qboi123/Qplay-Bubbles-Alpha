@@ -21,7 +21,7 @@ class Bubble(object):
         self.scoreMultiplier: float = 0
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+        pass  # return BubbleObject(self, x, y, batch, size, speed)
 
     def set_unlocalized_name(self, name):
         if not hasattr(g, "NAME2BUBBLE"):
@@ -72,6 +72,9 @@ class BubbleObject(Collidable):
             size = smallest
         image = Resources.get_resource("bubbles", self.name, size)
 
+        if self.name == "ultra_bubble":
+            print(f"Size: {size}")
+
         # Properties
         self.speed = speed
         self.size = size
@@ -108,7 +111,7 @@ class BubbleObject(Collidable):
             self.sprite.update(x=self.position.x, y=self.position.y)
 
     def on_collision(self, event: CollisionEvent):
-        if not self.dead:
+        if (not self.dead) and (not event.player.ghostMode):
             if type(event.otherObject) == Player:
                 obj: Player = event.otherObject
                 obj.add_score(((self.size / 2) + (self.speed / utils.TICKS_PER_SEC / 7))
