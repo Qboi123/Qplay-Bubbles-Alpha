@@ -3,19 +3,20 @@ import time
 
 import pyglet
 
-import graphics
 from init import Init
+
+init = Init()
+init.pre_init()
+
+import graphics
 from log import Log
 from scenemanager import SceneManager
 from utils import version2name, UPDATE_INTERVAL, TICKS_PER_SEC, AUTO_SAVE_INTERVAL
-import resources
 
 VERSION = ("indev", 0, 0, 1)
 
 
 def main(args):
-    init = Init()
-    init.pre_init()
     window = pyglet.window.Window(1200, 700, "Qplay Bubbles %s" % version2name(VERSION))
     scene_manager = SceneManager(window, init)
     init.post_init()

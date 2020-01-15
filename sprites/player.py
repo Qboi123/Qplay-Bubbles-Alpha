@@ -26,8 +26,9 @@ class Player(Collidable):
 
         super(Player, self).__init__(sprite)
 
-        self.statsLabel = Label("Not loaded yet", "Helvetica", 16, anchor_x="left", anchor_y="top", batch=scene.batch, x=0,
-                                y=scene.window.height, multiline=True, width=scene.window.width, bold=True)
+        self.statsLabel = Label("Not loaded yet", "Helvetica", 14, anchor_x="left", anchor_y="baseline", batch=scene.batch, x=0,
+                                y=scene.window.height-32, multiline=True, width=scene.window.width, bold=True,
+                                color=(255, 255, 255, 127))
 
         self.gameOverText = Label("", "Helvetica", 36, anchor_x="center", anchor_y="baseline", align="center",
                                   batch=scene.batch, x=scene.window.width / 2, y=scene.window.height / 2 - 50, multiline=True,
@@ -78,7 +79,7 @@ class Player(Collidable):
         :return:
         """
         if not self.dead:
-            self.statsLabel.text = "Score: %s\nLives: %s\nEffects: %s" % (self._score, self._lives, self.activeEffects)
+            self.statsLabel.text = "Score: %s\nLives: %s" % (self._score, self._lives)
             self.statsLabel.draw()
         else:
             self.statsLabel.text = ""
@@ -121,8 +122,8 @@ class Player(Collidable):
         # if self._lives <= 0:
         #     pass
         # else:
-        #     for effect in self.activeEffects:
-        #         effect.tick_update(dt, scene.window, batch, self)
+        #     for appliedEffect in self.activeEffects:
+        #         appliedEffect.tick_update(dt, scene.window, batch, self)
 
     def damage(self, lives):
         """
@@ -216,12 +217,12 @@ class Player(Collidable):
                 self.__position.x = self.sprite.width / 2
             elif not position.x < self.scene.window.width - self.sprite.width / 2:
                 self.__position.x = self.scene.window.width - self.sprite.width / 2
-            if self.sprite.height / 2 < position.y < self.scene.window.height - self.sprite.height / 2:
+            if self.sprite.height / 2 < position.y < self.scene.window.height - self.sprite.height / 2 - 72:
                 self.__position.y = position.y
             elif not self.sprite.height / 2 < position.y:
                 self.__position.y = self.sprite.height / 2
-            elif not position.y < self.scene.window.height - self.sprite.height / 2:
-                self.__position.y = self.scene.window.height - self.sprite.height / 2
+            elif not position.y < self.scene.window.height - self.sprite.height / 2 - 72:
+                self.__position.y = self.scene.window.height - self.sprite.height / 2 - 72
             self.sprite.update(x=self.__position.x, y=self.__position.y)
 
     def handle_event(self, event):
@@ -242,12 +243,12 @@ class Player(Collidable):
         :return:
         """
         # self.on_collision(event.scene.window, event.batch, event.otherObject)
-        # for effect in self.activeEffects:
-        #     effect.on_player_collision(event.scene.window, event.batch, self, event.otherObject)
+        # for appliedEffect in self.activeEffects:
+        #     appliedEffect.on_player_collision(event.scene.window, event.batch, self, event.otherObject)
 
     def move_to(self, x, y):
         """
-        Teleportation effect, moves the player directly to the given position (x, y)
+        Teleportation appliedEffect, moves the player directly to the given position (x, y)
 
         :param x:
         :param y:

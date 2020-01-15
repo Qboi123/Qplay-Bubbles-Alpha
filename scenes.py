@@ -9,6 +9,7 @@ from pyglet.text import Label
 from pyglet.window import key
 
 from events import CollisionEvent, UpdateEvent, DrawEvent, TickUpdateEvent, PlayerCollisionEvent, AutoSaveEvent
+from gui import EffectGUI, GameGUI
 from map import Map
 from objects import Collidable
 from resources import Resources
@@ -94,6 +95,9 @@ class GameScene(Scene):
         self.game_objects: List[Union[Any, Collidable]] = list()
         self.map: Optional[Map] = None
         self.fps: Optional[Label] = None
+
+        self.effectGUI: Optional[EffectGUI] = None
+
         self.random = Random(4096)
 
         self.motionKeys = [key.LEFT, key.RIGHT, key.DOWN, key.UP]
@@ -105,12 +109,16 @@ class GameScene(Scene):
         self.player_mpx_strafe = 0
 
     def init_scene(self):
+        self.gameGUI = GameGUI(self)
+        self.effectGUI = EffectGUI(self)
+
         self.player: Player = Player((self.window.height / 2, self.window.width / 2), self)
         self.game_objects.append(self.player)
         self.map: Map = Map()
         self.fps: Label = Label("0 FPS", "helverica", 14, False, True, x=self.window.width, y=self.window.height,
                                 width=self.window.width, anchor_x="right", anchor_y="top", align="right",
                                 multiline=False, batch=self.batch)
+
         if not self.scene_manager.save.load_save(self):
             self.random = Random(4096)
 

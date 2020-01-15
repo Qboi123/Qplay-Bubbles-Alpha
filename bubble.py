@@ -6,7 +6,7 @@ from pyglet.window import Window
 
 import globals as g
 import utils
-from events import CollisionEvent, DrawEvent, UpdateEvent, TickUpdateEvent
+from events import CollisionEvent, DrawEvent, UpdateEvent, TickUpdateEvent, BubbleUpdateEvent, BubbleTickUpdateEvent
 from exceptions import UnlocalizedNameError
 from objects import Collidable
 from resources import Resources
@@ -100,7 +100,7 @@ class BubbleObject(Collidable):
             dx = -self.speed
             dy = 0
 
-            speed_multiply = event.player._score / 10000
+            speed_multiply = event.player._score / 100000
             if speed_multiply < 0.5:
                 speed_multiply = 0.5
 
@@ -109,6 +109,7 @@ class BubbleObject(Collidable):
             # noinspection PyUnboundLocalVariable
             self.position += (dx * event.dt * utils.TICKS_PER_SEC, dy * event.dt * utils.TICKS_PER_SEC)
             self.sprite.update(x=self.position.x, y=self.position.y)
+        BubbleUpdateEvent(event.dt, self, event.scene)
 
     def on_collision(self, event: CollisionEvent):
         if (not self.dead) and (not event.player.ghostMode):
@@ -126,6 +127,7 @@ class BubbleObject(Collidable):
         if not self.dead:
             if hasattr(self.baseBubbleClass, "on_tick_update"):
                 self.baseBubbleClass.on_tick_update(event)
+        BubbleTickUpdateEvent(event.dt, self, event.scene)
 
     def unbind_events(self):
         DrawEvent.unbind(self.draw)

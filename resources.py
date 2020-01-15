@@ -217,6 +217,9 @@ class Resources(object):
         # Player image
         self.status = "Loading player resource"
         self.__resources["player"]: _pyglet.image.AbstractImage = _pyglet.resource.image(name="sprites/player.png")
+
+        self.__resources["gui"] = dict()
+        self.__resources["gui"]["scoreboard_bg"] = _pyglet.resource.image("textures/gui/scoreboardBackground.png")
         # print(player.__dict__)
         # print(player.__repr__())
         center_image(self.__resources["player"])

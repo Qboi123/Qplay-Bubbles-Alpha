@@ -46,7 +46,7 @@ from time import gmtime, strftime
 
 # from block import Block
 from bubble import BubbleObject
-from effects import AppliedEffect
+from effects import Effect
 from events import AutoSaveEvent
 from sprites.player import Player
 from map import Map
@@ -63,11 +63,11 @@ class SaveManager(object):
         """
 
         # Get the appropriate OS specific save path:
-        self.save_path = pyglet.resource.get_settings_path('Qplay Bubbles')
+        self.save_path = os.path.join(pyglet.resource.get_settings_path('Qplay Bubbles'), "saves")
         print(f"Save Path: {self.save_path}")
-        self.save_file = 'save{}.dat'
+        self.save_file = 'Save-{}.dat'
         self.config_file = 'config.json'
-        self.save_slot = 0
+        self.save_name = "TEST"
 
         self._data = {'revision': 0,
                       'options': {},
@@ -77,16 +77,16 @@ class SaveManager(object):
 
     @staticmethod
     def timestamp_print(txt):
-        print((strftime("%d-%m-%Y %H:%M:%S | ", gmtime()) + str(txt)))
+        print(("[Save Manager]: " + str(txt)))
 
     def has_save_game(self):
         """Returns True if the save path and file exist."""
-        save_file = self.save_file.format(self.save_slot)
+        save_file = self.save_file.format(self.save_name)
         return os.path.exists(os.path.join(self.save_path, save_file))
 
     def load_save(self, scene):
         # Initialize loading save
-        save_file = self.save_file.format(self.save_slot)
+        save_file = self.save_file.format(self.save_name)
         save_file_path = os.path.join(self.save_path, save_file)
         self.timestamp_print('start loading')
 
@@ -95,11 +95,13 @@ class SaveManager(object):
             with open(save_file_path, 'rb') as file:
                 loaded_save: Dict[str, Union[List[Tuple], Tuple, Random]] = pickle.load(file)
 
-            print(f"Loaded Save Data: {loaded_save}")
+            # print(f"Loaded Save Data: {loaded_save}")
 
             # Bubbles
             for name, size, speed, position in loaded_save["bubbles"]:
-                scene.game_objects.append(scene.map.create_bubble(position.x, position.y, g.NAME2BUBBLE[name], scene.batch, size, speed))
+                scene.game_objects.append(
+                    scene.map.create_bubble(position.x, position.y, g.NAME2BUBBLE[name], scene.batch, size, speed,
+                                            scene))
 
             # Player
             lives = loaded_save["player"][0][0]
@@ -120,8 +122,8 @@ class SaveManager(object):
 
             # Effects
             for effect, time, strength in loaded_save["effects"]:
-                effect: AppliedEffect
-                scene.player.add_effect(effect.__class__(time, scene, strength))
+                effect: str
+                scene.player.add_effect(g.NAME2EFFECT[effect](time, scene, strength))
 
             # Random
             scene.random.setstate(loaded_save["random"])
@@ -129,13 +131,13 @@ class SaveManager(object):
             # Completed
             self.timestamp_print('Loading completed.')
             return True
-        except Exception as e:     # If loading fails for ANY reason, return False
+        except Exception as e:  # If loading fails for ANY reason, return False
             self.timestamp_print('Loading failed! Generating a new map.')
-            self.timestamp_print(e.__class__.__name__+": "+e.__str__())
+            self.timestamp_print(e.__class__.__name__ + ": " + e.__str__())
             return False
 
     def save_save(self, event: AutoSaveEvent):
-        save_file = self.save_file.format(self.save_slot)
+        save_file = self.save_file.format(self.save_name)
         save_file_path = os.path.join(self.save_path, save_file)
         self.timestamp_print('start saving')
 
@@ -148,17 +150,18 @@ class SaveManager(object):
         # Efficiently save the save to a binary file
         with open(save_file_path, 'wb+') as file:
             # noinspection PyProtectedMember,SpellCheckingInspection
-            pickle.dump({"player": [(event.player._lives, event.player._score, event.player._Player__position, event.player.rotation, event.player.ghostMode)],
+            pickle.dump({"player": [(event.player._lives, event.player._score, event.player._Player__position,
+                                     event.player.rotation, event.player.ghostMode)],
                          "bubbles": [(bubbleobject.name,
                                       bubbleobject.size,
                                       bubbleobject.speed,
                                       bubbleobject.position
                                       ) for bubbleobject in event.map.bubbles],
                          "random": event.scene.random.getstate(),
-                         "effects": [(effect,
-                                      effect._get_time_remaining(),
-                                      effect.strengthMultiply
-                                      ) for effect in event.player.activeEffects]
+                         "effects": [(appliedeffect.get_unlocalized_name(),
+                                      appliedeffect._get_time_remaining(),
+                                      appliedeffect.strengthMultiply
+                                      ) for appliedeffect in event.player.activeEffects]
                          }, file)
 
         self.timestamp_print('Saving completed')

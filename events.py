@@ -120,7 +120,88 @@ class PlayerCollisionEvent(CollisionEvent):
             raise ValueError(f"Handler '{func.__name__ if type(func) == type and not hasattr(func,'__class__') else func.__class__.__name__ if func.__class__.__name__ != 'method' else func.__name__}' can't be unbinded: {e.args[0]}")
         # print(f"Unbind: {func.__name__}")
         return func
-    
+
+
+class BubbleUpdateEvent(Event):
+    _handlers = list()
+
+    def __init__(self, dt, bubble_object, scene):
+        self.dt = dt
+        self.bubbleObject = bubble_object
+        super(BubbleUpdateEvent, self).__init__(scene)
+
+    @classmethod
+    def bind(cls, func):
+        cls._handlers.append(func)
+        # print(func)
+        return func
+
+    @classmethod
+    def unbind(cls, func):
+        cls._handlers.remove(func)
+        # print(f"Unbind: {func.__name__}")
+        return func
+
+
+class BubbleCreateEvent(Event):
+    _handlers = list()
+
+    def __init__(self, bubble_object, scene):
+        self.bubbleObject = bubble_object
+        super(BubbleCreateEvent, self).__init__(scene)
+
+    @classmethod
+    def bind(cls, func):
+        cls._handlers.append(func)
+        # print(func)
+        return func
+
+    @classmethod
+    def unbind(cls, func):
+        cls._handlers.remove(func)
+        # print(f"Unbind: {func.__name__}")
+        return func
+
+
+class BubbleRemoveEvent(Event):
+    _handlers = list()
+
+    def __init__(self, bubble_type, scene):
+        self.bubbleType = bubble_type
+        super(BubbleRemoveEvent, self).__init__(scene)
+
+    @classmethod
+    def bind(cls, func):
+        cls._handlers.append(func)
+        # print(func)
+        return func
+
+    @classmethod
+    def unbind(cls, func):
+        cls._handlers.remove(func)
+        # print(f"Unbind: {func.__name__}")
+        return func
+
+
+class BubbleTickUpdateEvent(Event):
+    _handlers = list()
+
+    def __init__(self, dt, bubble_object, scene):
+        self.dt = dt
+        self.bubbleObject = bubble_object
+        super(BubbleTickUpdateEvent, self).__init__(scene)
+
+    @classmethod
+    def bind(cls, func):
+        cls._handlers.append(func)
+        # print(func)
+        return func
+
+    @classmethod
+    def unbind(cls, func):
+        cls._handlers.remove(func)
+        # print(f"Unbind: {func.__name__}")
+        return func
 
 
 class TickUpdateEvent(Event):
@@ -253,7 +334,7 @@ class EffectEvent(Event):
     _handlers = list()
 
     def __init__(self, effect, scene):
-        self.effect = effect
+        self.appliedEffect = effect
         super(EffectEvent, self).__init__(scene)
 
     @classmethod
