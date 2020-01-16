@@ -8,8 +8,9 @@ from pyglet.media import Player as MediaPlayer
 from pyglet.text import Label
 from pyglet.window import key
 
-from events import CollisionEvent, UpdateEvent, DrawEvent, TickUpdateEvent, PlayerCollisionEvent, AutoSaveEvent
-from gui import EffectGUI, GameGUI
+from events import CollisionEvent, UpdateEvent, DrawEvent, TickUpdateEvent, PlayerCollisionEvent, AutoSaveEvent, \
+    PauseEvent, UnpauseEvent
+from gui import EffectGUI, GameGUI, PauseGUI
 from map import Map
 from objects import Collidable
 from resources import Resources
@@ -88,6 +89,7 @@ class GameScene(Scene):
     def __init__(self, window):
         Scene.__init__(self)
 
+        self.pauseMode = False
         self.window: pyglet.window.Window = window
         self.batch: pyglet.graphics.Batch = pyglet.graphics.Batch()
 
@@ -111,6 +113,7 @@ class GameScene(Scene):
     def init_scene(self):
         self.gameGUI = GameGUI(self)
         self.effectGUI = EffectGUI(self)
+        self.pauseGUI = PauseGUI(self)
 
         self.player: Player = Player((self.window.height / 2, self.window.width / 2), self)
         self.game_objects.append(self.player)
@@ -125,9 +128,18 @@ class GameScene(Scene):
         self.player.refresh()
         self.fps_text = "FPS: 0"
 
+    def pause(self):
+        PauseEvent(self)
+        self.pauseMode = True
+
+    def unpause(self):
+        UnpauseEvent(self)
+        self.pauseMode = False
+
     def on_draw(self):
         try:
             glClearColor(0.1, 0.5, 0.55, 1)
+            # glClearColor(0.25, 0.25, 0.25, 1)
             self.window.clear()
             self.batch.draw()
             DrawEvent(self)
@@ -144,31 +156,43 @@ class GameScene(Scene):
 
     # noinspection PyUnusedLocal
     def on_key_press(self, symbol, modifiers):
-        if symbol == self.motionKeys[0]:
-            self.player_rot_strafe -= 5
-        if symbol == self.motionKeys[1]:
-            self.player_rot_strafe += 5
+        if symbol == key.ESCAPE:
+            if self.pauseMode:
+                self.unpause()
+            else:
+                self.pause()
+            return pyglet.event.EVENT_HANDLED
+        if not self.pauseMode:
+            if symbol == self.motionKeys[0]:
+                self.player_rot_strafe -= 5
+            if symbol == self.motionKeys[1]:
+                self.player_rot_strafe += 5
 
-        if symbol == self.motionKeys[2]:
-            self.player_mpx_strafe += 10
-        if symbol == self.motionKeys[3]:
-            self.player_mpx_strafe -= 10
+            if symbol == self.motionKeys[2]:
+                self.player_mpx_strafe += 10
+            if symbol == self.motionKeys[3]:
+                self.player_mpx_strafe -= 10
 
     # noinspection PyUnusedLocal
     def on_key_release(self, symbol, modifiers):
-        if symbol == self.motionKeys[0]:
-            self.player_rot_strafe += 5
-        if symbol == self.motionKeys[1]:
-            self.player_rot_strafe -= 5
+        if symbol == key.ESCAPE:
+            return pyglet.event.EVENT_HANDLED
+        if not self.pauseMode:
+            if symbol == self.motionKeys[0]:
+                self.player_rot_strafe += 5
+            if symbol == self.motionKeys[1]:
+                self.player_rot_strafe -= 5
 
-        if symbol == self.motionKeys[2]:
-            self.player_mpx_strafe -= 10
-        if symbol == self.motionKeys[3]:
-            self.player_mpx_strafe += 10
+            if symbol == self.motionKeys[2]:
+                self.player_mpx_strafe -= 10
+            if symbol == self.motionKeys[3]:
+                self.player_mpx_strafe += 10
 
     def update(self, dt):
         # To avoid handling collisions twice, we employ nested loops of ranges.
         # This method also avoids the problem of colliding an object with itself.
+        if self.pauseMode:
+            return
         for i in range(len(self.game_objects)):
             for j in range(i + 1, len(self.game_objects)):
 
@@ -195,10 +219,14 @@ class GameScene(Scene):
     def tick_update(self, dt):
         # self.map.tick_update(dt, self.window, self.batch, self.game_objects)
         self.fps.text = self.fps_text
+        if self.pauseMode:
+            return
         TickUpdateEvent(dt, self)
 
     # noinspection PyUnusedLocal
     def auto_save_update(self, dt):
+        if self.pauseMode:
+            return
         AutoSaveEvent(dt, self)
 
 

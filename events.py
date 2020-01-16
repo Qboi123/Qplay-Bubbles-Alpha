@@ -330,6 +330,46 @@ class AutoSaveEvent(Event):
         return func
 
 
+class PauseEvent(Event):
+    _handlers = list()
+
+    def __init__(self, scene):
+        self.pause = True
+        super(PauseEvent, self).__init__(scene)
+
+    @classmethod
+    def bind(cls, func):
+        cls._handlers.append(func)
+        # print(f"Bind: {func.__name__}")
+        return func
+
+    @classmethod
+    def unbind(cls, func):
+        cls._handlers.remove(func)
+        # print(f"Unbind: {func.__name__}")
+        return func
+
+
+class UnpauseEvent(Event):
+    _handlers = list()
+
+    def __init__(self, scene):
+        self.pause = False
+        super(UnpauseEvent, self).__init__(scene)
+
+    @classmethod
+    def bind(cls, func):
+        cls._handlers.append(func)
+        # print(f"Bind: {func.__name__}")
+        return func
+
+    @classmethod
+    def unbind(cls, func):
+        cls._handlers.remove(func)
+        # print(f"Unbind: {func.__name__}")
+        return func
+
+
 class EffectEvent(Event):
     _handlers = list()
 
@@ -430,36 +470,36 @@ class EffectTickUpdateEvent(EffectEvent):
 
 class ScoreEvent(Event):
     _handlers = list()
-    _handlers_params = {"cancel_score": []}
-    cancel_score = False
+    _handlers_params = {"cancelscore": []}
+    cancelscore = False
 
     def __init__(self, score, scene):
         self.score = score
         super(ScoreEvent, self).__init__(scene)
 
     @classmethod
-    def bind(cls, func, cancel_score=False):
+    def bind(cls, func, cancelscore=False):
         cls._handlers.append(func)
-        if cancel_score:
-            cls._handlers_params["cancel_score"].append(func)
-            cls.cancel_score = True
+        if cancelscore:
+            cls._handlers_params["cancelscore"].append(func)
+            cls.cancelscore = True
         # print(func)
         return func
 
     @classmethod
     def unbind(cls, func):
         cls._handlers.remove(func)
-        if func in cls._handlers_params["cancel_score"]:
-            if len(cls._handlers_params["cancel_score"]) == 1:
-                cls.cancel_score = False
-            cls._handlers_params["cancel_score"].remove(func)
+        if func in cls._handlers_params["cancelscore"]:
+            if len(cls._handlers_params["cancelscore"]) == 1:
+                cls.cancelscore = False
+            cls._handlers_params["cancelscore"].remove(func)
         # print(f"Unbind: {func.__name__}")
         return func
 
     # noinspection PyProtectedMember
-    def add_score(self, score):
-        self.player._add_score(score)
+    def addscore(self, score):
+        self.player._addscore(score)
 
     # noinspection PyProtectedMember
-    def remove_score(self, score):
-        self.player._remove_score(score)
+    def removescore(self, score):
+        self.player._removescore(score)

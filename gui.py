@@ -1,11 +1,15 @@
+from copy import copy
+
 from typing import Dict, Tuple, Union
 
 from pyglet import resource
 from pyglet.sprite import Sprite
 from pyglet.text import Label
 
+import sprites
 from effects import Effect
-from events import EffectStartedEvent, EffectStoppedEvent, EffectUpdateEvent, DrawEvent, UpdateEvent
+from events import EffectStartedEvent, EffectStoppedEvent, EffectUpdateEvent, DrawEvent, UpdateEvent, PauseEvent, \
+    UnpauseEvent
 from resources import Resources
 
 
@@ -97,3 +101,48 @@ class GameGUI(object):
 
     def on_draw(self, event: DrawEvent):
         self.sprites["BG"].draw()
+
+
+class PauseGUI(object):
+    def __init__(self, scene):
+        self.sprites: Dict[str, Union[Sprite, Label]] = dict()
+
+        self.startX = 64
+        self.startY = scene.window.height - 128
+
+        self.endY = 40
+
+        self.currentX = self.startX
+        self.currentY = self.startY
+
+        PauseEvent.bind(self.on_pause)
+        DrawEvent.bind(self.on_draw)
+        UnpauseEvent.bind(self.on_unpause)
+
+    def on_pause(self, event: PauseEvent):
+        bg = resource.image("textures/gui/pauseBG.png")
+        self.sprites["BG"] = Sprite(bg, 0, 0, batch=event.batch)
+
+        for bubble in sprites.BUBBLES:
+            image = Resources.get_resource("bubbles", bubble.get_unlocalized_name(), 40)
+            self.sprites[bubble.get_unlocalized_name()+".image"] = Sprite(
+                image, self.currentX, self.currentY, batch=event.batch)
+            self.sprites[bubble.get_unlocalized_name()+".label"] = Label(
+                Resources.get_localized_name(f"bubble.{bubble.get_unlocalized_name()}.name"),
+                "Arial", 15, color=(255, 255, 255, 127), x=self.currentX + 30, y=self.currentY - 7.5)
+            self.currentY -= 48
+            if self.currentY <= self.endY:
+                self.currentY = self.startY
+                self.currentX += 256
+
+    def on_draw(self, event: DrawEvent):
+        for sprite in self.sprites.values():
+            sprite.draw()
+
+    def on_unpause(self, event: UnpauseEvent):
+        for key, value in self.sprites.copy().items():
+            value.delete()
+            del self.sprites[key]
+
+        self.currentX = self.startX
+        self.currentY = self.startY

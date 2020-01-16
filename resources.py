@@ -4,7 +4,8 @@ import traceback
 
 import pyglet as _pyglet
 import sys
-from typing import Dict as _Dict
+import yaml
+from typing import Dict as _Dict, Dict, List, Union
 
 import exceptions
 from utils.image.pyglet import center_image
@@ -32,6 +33,7 @@ class Resources(object):
     __resources = {}
     loaded = False
     _status = ""
+    lang: Union[Dict, List] = dict()
 
     # status = property()
 
@@ -205,6 +207,7 @@ class Resources(object):
     def load(self):
         Resources.no_image = _pyglet.resource.image("no_image.png")
         Resources.no_image_circle = _pyglet.resource.image("no_image_circle.png")
+        center_image(Resources.no_image_circle)
         self.status = "Indexing resources"
 
         # Index assets, and generate bubble images for all sizes.
@@ -223,6 +226,12 @@ class Resources(object):
         # print(player.__dict__)
         # print(player.__repr__())
         center_image(self.__resources["player"])
+
+        status = "Loading Lang file"
+
+        with open("assets/lang/en_us.yaml") as file:
+            Resources.lang = yaml.full_load(file)
+
         self.loaded = True
 
     # noinspection PyUnreachableCode
@@ -254,3 +263,12 @@ class Resources(object):
             return cls._get_resource(dict_[resource_recursion[0]], *resource_recursion[1:])
         else:
             return dict_[resource_recursion[0]]
+
+    @classmethod
+    def get_localized_name(cls, id_):
+        # print(id_)
+        # print(cls.lang)
+        try:
+            return cls.lang[id_]
+        except KeyError:
+            return "N/A"

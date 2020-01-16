@@ -116,7 +116,7 @@ class LifeBubble(Bubble):
         return BubbleObject(self, x, y, batch, size, speed)
 
     def on_collision(self, event: CollisionEvent):
-        event.player.gain_lives(1)
+        event.player.gainlives(1)
 
 
 class TeleporterBubble(Bubble):
@@ -134,7 +134,7 @@ class TeleporterBubble(Bubble):
         return BubbleObject(self, x, y, batch, size, speed)
 
     def on_collision(self, event: CollisionEvent):
-        event.player.add_effect(EFFECTS.TeleportingEffect(5, event.scene, event.eventObject.size / 40))
+        event.player.add_effect(EFFECTS.TeleportingEffect(5, event.eventObject.size / 40, event.scene))
 
 
 class SpeedBoostBubble(Bubble):
@@ -152,7 +152,7 @@ class SpeedBoostBubble(Bubble):
         return BubbleObject(self, x, y, batch, size, speed)
 
     def on_collision(self, event: CollisionEvent):
-        event.player.add_effect(EFFECTS.SpeedBoostEffect(7, event.scene, event.eventObject.size / 40))
+        event.player.add_effect(EFFECTS.SpeedBoostEffect(7, event.eventObject.size / 40, event.scene))
 
 
 class SlownessBubble(Bubble):
@@ -170,7 +170,7 @@ class SlownessBubble(Bubble):
         return BubbleObject(self, x, y, batch, size, speed)
 
     def on_collision(self, event: CollisionEvent):
-        event.player.add_effect(EFFECTS.SlownessEffect(8, event.scene, event.eventObject.size / 60))
+        event.player.add_effect(EFFECTS.SlownessEffect(8, event.eventObject.size / 60, event.scene))
 
 
 class UltraBubble(Bubble):
@@ -189,7 +189,7 @@ class UltraBubble(Bubble):
         return BubbleObject(self, x, y, batch, 48, speed)
 
     def on_collision(self, event: CollisionEvent):
-        event.player.add_effect(EFFECTS.ScoreStatusEffect(10, event.scene, 10))
+        event.player.add_effect(EFFECTS.ScoreStatusEffect(10, 10, event.scene))
 
 
 class GhostBubble(Bubble):
@@ -209,7 +209,7 @@ class GhostBubble(Bubble):
 
     def on_collision(self, event: CollisionEvent):
         # pass
-        event.player.add_effect(EFFECTS.GhostEffect(6, event.scene))
+        event.player.add_effect(EFFECTS.GhostEffect(6, 1, event.scene))
 
 
 class ParalyseBubble(Bubble):
@@ -229,7 +229,7 @@ class ParalyseBubble(Bubble):
 
     def on_collision(self, event: CollisionEvent):
         # pass
-        event.player.add_effect(EFFECTS.ParalisEffect(6, event.scene))
+        event.player.add_effect(EFFECTS.ParalisEffect(6, 1, event.scene))
 
 
 class ConfusionBubble(Bubble):
@@ -249,7 +249,7 @@ class ConfusionBubble(Bubble):
 
     def on_collision(self, event: CollisionEvent):
         # pass
-        event.player.add_effect(EFFECTS.ConfusionEffect(6, event.scene))
+        event.player.add_effect(EFFECTS.ConfusionEffect(6, 1, event.scene))
 
 
 class DoubleScoreStatBubble(Bubble):
@@ -261,13 +261,13 @@ class DoubleScoreStatBubble(Bubble):
         self.speedMax = 33
         self.scoreMultiplier = 2
 
-        BubblePriorityCalculator.add(self, 100000)
+        BubblePriorityCalculator.add(self, 1000)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
         return BubbleObject(self, x, y, batch, size, speed)
 
     def on_collision(self, event: CollisionEvent):
-        event.player.add_effect(EFFECTS.ScoreStatusEffect(event.eventObject.speed / 1.2, event.scene, 2))
+        event.player.add_effect(EFFECTS.ScoreStatusEffect(event.eventObject.speed / 1.2, 2, event.scene))
 
 
 class TripleScoreStatBubble(Bubble):
@@ -279,10 +279,10 @@ class TripleScoreStatBubble(Bubble):
         self.speedMax = 63
         self.scoreMultiplier = 2
 
-        BubblePriorityCalculator.add(self, 0000)
+        BubblePriorityCalculator.add(self, 600)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
         return BubbleObject(self, x, y, batch, size, speed)
 
     def on_collision(self, event: CollisionEvent):
-        event.player.add_effect(EFFECTS.TeleportingEffect(event.eventObject.speed / 2.4, event.scene, 3))
+        event.player.add_effect(EFFECTS.ScoreStatusEffect(event.eventObject.speed / 2.4, 3, event.scene))

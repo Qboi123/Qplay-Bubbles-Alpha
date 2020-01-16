@@ -1,18 +1,3 @@
-import os
-import time
-
-import pyglet
-
-from init import Init
-
-init = Init()
-init.pre_init()
-
-import graphics
-from log import Log
-from scenemanager import SceneManager
-from utils import version2name, UPDATE_INTERVAL, TICKS_PER_SEC, AUTO_SAVE_INTERVAL
-
 VERSION = ("indev", 0, 0, 1)
 
 
@@ -27,6 +12,10 @@ def main(args):
 
 
 if __name__ == '__main__':
+    import os
+    import time
+
+    from log import Log
     import sys
 
     startup = time.time()
@@ -51,6 +40,17 @@ if __name__ == '__main__':
     sys.stderr = stderr
     sys.stdout = stdout
     sys.stdin = stdin
+
+    import pyglet
+
+    from init import Init
+
+    init = Init()
+    init.pre_init()
+
+    import graphics
+    from scenemanager import SceneManager
+    from utils import version2name, UPDATE_INTERVAL, TICKS_PER_SEC, AUTO_SAVE_INTERVAL
 
     main(sys.argv)
     pyglet.app.run()

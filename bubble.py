@@ -6,7 +6,8 @@ from pyglet.window import Window
 
 import globals as g
 import utils
-from events import CollisionEvent, DrawEvent, UpdateEvent, TickUpdateEvent, BubbleUpdateEvent, BubbleTickUpdateEvent
+from events import CollisionEvent, DrawEvent, UpdateEvent, TickUpdateEvent, BubbleUpdateEvent, BubbleTickUpdateEvent, \
+    PauseEvent, UnpauseEvent
 from exceptions import UnlocalizedNameError
 from objects import Collidable
 from resources import Resources
@@ -48,6 +49,7 @@ class Bubble(object):
         pass
 
 
+# noinspection PyUnusedLocal
 class BubbleObject(Collidable):
     def __init__(self, base_class, x, y, batch, size, speed):
         parent: BubbleObject
@@ -80,6 +82,7 @@ class BubbleObject(Collidable):
         self.size = size
 
         self.position: Position2D = Position2D((x, y))
+        self.pause = False
 
         sprite: Sprite = Sprite(img=image, x=x, y=y, batch=batch)
         super(BubbleObject, self).__init__(sprite)
@@ -89,33 +92,42 @@ class BubbleObject(Collidable):
         DrawEvent.bind(self.draw)
         UpdateEvent.bind(self.update)
         CollisionEvent.bind(self.on_collision)
+        PauseEvent.bind(self.on_pause)
+        UnpauseEvent.bind(self.on_unpause)
 
     def draw(self, event):
         pass
         # self.sprite.update(self.sprite.x, self.sprite.y, self.sprite.rotation, self.sprite.scale,
         #                    self.sprite.scale_x, self.sprite.scale_y)
 
+    def on_unpause(self, event: PauseEvent):
+        self.pause = False
+
+    def on_pause(self, event: PauseEvent):
+        self.pause = True
+
     def update(self, event: UpdateEvent):
-        if not self.dead:
-            dx = -self.speed
-            dy = 0
+        if not self.pause:
+            if not self.dead:
+                dx = -self.speed
+                dy = 0
 
-            speed_multiply = event.player._score / 100000
-            if speed_multiply < 0.5:
-                speed_multiply = 0.5
+                speed_multiply = event.player.score / 100000
+                if speed_multiply < 0.5:
+                    speed_multiply = 0.5
 
-            dx *= speed_multiply
+                dx *= speed_multiply
 
-            # noinspection PyUnboundLocalVariable
-            self.position += (dx * event.dt * utils.TICKS_PER_SEC, dy * event.dt * utils.TICKS_PER_SEC)
-            self.sprite.update(x=self.position.x, y=self.position.y)
-        BubbleUpdateEvent(event.dt, self, event.scene)
+                # noinspection PyUnboundLocalVariable
+                self.position += (dx * event.dt * utils.TICKS_PER_SEC, dy * event.dt * utils.TICKS_PER_SEC)
+                self.sprite.update(x=self.position.x, y=self.position.y)
+            BubbleUpdateEvent(event.dt, self, event.scene)
 
     def on_collision(self, event: CollisionEvent):
         if (not self.dead) and (not event.player.ghostMode):
             if type(event.otherObject) == Player:
                 obj: Player = event.otherObject
-                obj.add_score(((self.size / 2) + (self.speed / utils.TICKS_PER_SEC / 7))
+                obj.addscore(((self.size / 2) + (self.speed / utils.TICKS_PER_SEC / 7))
                               * self.baseBubbleClass.scoreMultiplier)
 
                 if hasattr(self.baseBubbleClass, "on_collision"):

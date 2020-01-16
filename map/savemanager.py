@@ -77,7 +77,7 @@ class SaveManager(object):
 
     @staticmethod
     def timestamp_print(txt):
-        print(("[Save Manager]: " + str(txt)))
+        print(("Save Manager: " + str(txt)))
 
     def has_save_game(self):
         """Returns True if the save path and file exist."""
@@ -88,9 +88,10 @@ class SaveManager(object):
         # Initialize loading save
         save_file = self.save_file.format(self.save_name)
         save_file_path = os.path.join(self.save_path, save_file)
-        self.timestamp_print('start loading')
+        self.timestamp_print('Start loading')
 
-        try:
+        # try:
+        if 1:
             # Load file
             with open(save_file_path, 'rb') as file:
                 loaded_save: Dict[str, Union[List[Tuple], Tuple, Random]] = pickle.load(file)
@@ -114,8 +115,8 @@ class SaveManager(object):
 
             scene.player._Player__position = pos
             scene.player.rotation = rot
-            scene.player._score = score
-            scene.player._lives = lives
+            scene.player.score = score
+            scene.player.lives = lives
             scene.player.ghostMode = ghost_mode
 
             scene.player.refresh()
@@ -123,7 +124,7 @@ class SaveManager(object):
             # Effects
             for effect, time, strength in loaded_save["effects"]:
                 effect: str
-                scene.player.add_effect(g.NAME2EFFECT[effect](time, scene, strength))
+                scene.player.add_effect(g.NAME2EFFECT[effect](time, strength, scene))
 
             # Random
             scene.random.setstate(loaded_save["random"])
@@ -131,26 +132,26 @@ class SaveManager(object):
             # Completed
             self.timestamp_print('Loading completed.')
             return True
-        except Exception as e:  # If loading fails for ANY reason, return False
-            self.timestamp_print('Loading failed! Generating a new map.')
-            self.timestamp_print(e.__class__.__name__ + ": " + e.__str__())
-            return False
+        # except Exception as e:  # If loading fails for ANY reason, return False
+        #     self.timestamp_print('Loading failed! Generating a new map.')
+        #     self.timestamp_print(e.__class__.__name__ + ": " + e.__str__())
+        #     return False
 
     def save_save(self, event: AutoSaveEvent):
         save_file = self.save_file.format(self.save_name)
         save_file_path = os.path.join(self.save_path, save_file)
-        self.timestamp_print('start saving')
+        self.timestamp_print('Start saving')
 
         # If the save directory doesn't exist, create it
         if not os.path.exists(self.save_path):
             self.timestamp_print(
                 'Creating directory: {}'.format(self.save_path))
-            os.mkdir(self.save_path)
+            os.makedirs(self.save_path)
 
         # Efficiently save the save to a binary file
         with open(save_file_path, 'wb+') as file:
             # noinspection PyProtectedMember,SpellCheckingInspection
-            pickle.dump({"player": [(event.player._lives, event.player._score, event.player._Player__position,
+            pickle.dump({"player": [(event.player.lives, event.player.score, event.player._Player__position,
                                      event.player.rotation, event.player.ghostMode)],
                          "bubbles": [(bubbleobject.name,
                                       bubbleobject.size,
@@ -158,7 +159,7 @@ class SaveManager(object):
                                       bubbleobject.position
                                       ) for bubbleobject in event.map.bubbles],
                          "random": event.scene.random.getstate(),
-                         "effects": [(appliedeffect.get_unlocalized_name(),
+                         "effects": [(appliedeffect.baseEffectClass.get_unlocalized_name(),
                                       appliedeffect._get_time_remaining(),
                                       appliedeffect.strengthMultiply
                                       ) for appliedeffect in event.player.activeEffects]

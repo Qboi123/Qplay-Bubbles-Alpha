@@ -6,7 +6,7 @@ from pyglet import resource
 
 import globals as g
 from events import EffectUpdateEvent, UpdateEvent, TickUpdateEvent, EffectStoppedEvent, EffectStartedEvent, \
-    PlayerCollisionEvent, EffectTickUpdateEvent, ScoreEvent
+    PlayerCollisionEvent, EffectTickUpdateEvent, ScoreEvent, PauseEvent, UnpauseEvent
 from exceptions import UnlocalizedNameError
 
 
@@ -21,13 +21,16 @@ class AppliedEffect(object):
                 self.dead = True
                 return
 
-        self.baseEffectClass = base_class
+        self.baseEffectClass: Effect = base_class
 
         self.time = time()
 
         self.stopTime = time() + time_length
         self.strengthMultiply = strength_multiply
         self.dead = dead
+
+        self.pauseTime: Optional[float] = None
+        self.pause = False
 
         self.icon = icon
 
@@ -36,6 +39,9 @@ class AppliedEffect(object):
         PlayerCollisionEvent.bind(self.player_collision)
         UpdateEvent.bind(self.update)
         TickUpdateEvent.bind(self.tick_update)
+
+        PauseEvent.bind(self.on_pause)
+        UnpauseEvent.bind(self.on_unpause)
 
         self.baseEffectClass.on_effect_started(self, scene)
         EffectStartedEvent(self, scene)
@@ -47,10 +53,21 @@ class AppliedEffect(object):
         self.baseEffectClass.on_tick_update(self, event)
         EffectTickUpdateEvent(event.dt, self, event.scene)
 
+    def on_pause(self, event: PauseEvent):
+        self.pauseTime = self.timeRemaining
+        self.pause = True
+
+    def on_unpause(self, event: UnpauseEvent):
+        self.pause = False
+        self.timeRemaining = self.pauseTime
+
     def update(self, event: UpdateEvent):
         # self.on_update(event.dt, event.window, event.batch, event.player)
         self.baseEffectClass.on_update(self, event)
         EffectUpdateEvent(event.dt, self, event.scene)
+        if self.pause:
+            self.timeRemaining = self.pauseTime
+            return
         if self.timeRemaining <= 0:
             self.timeRemaining = 0
             if not self.dead:
@@ -227,15 +244,17 @@ class ScoreStatusEffect(Effect):
         self.incompatibles = [ScoreStatusEffect]
         self.icon = resource.image("textures/effect/scoreStat.png")
         self.set_unlocalized_name("score_status")
+        self.bindings = dict()
 
     def on_effect_started(self, appliedeffect: AppliedEffect, scene):
-        ScoreEvent.bind(lambda event, appliedeffect_=appliedeffect: self.on_score(appliedeffect_, event), True)
+        self.bindings[appliedeffect] = lambda event, appliedeffect_=appliedeffect: self.onscore(appliedeffect_, event)
+        ScoreEvent.bind(self.bindings[appliedeffect], True)
 
-    def on_score(self, appliedeffect: AppliedEffect, event: ScoreEvent):
-        event.add_score(event.score * appliedeffect.strengthMultiply)
+    def onscore(self, appliedeffect: AppliedEffect, event: ScoreEvent):
+        event.addscore(event.score * appliedeffect.strengthMultiply)
 
     def on_effect_stopped(self, appliedeffect: AppliedEffect, scene):
-        ScoreEvent.unbind(self.on_score)
+        ScoreEvent.unbind(self.bindings[appliedeffect])
 
 
 class GhostEffect(Effect):
