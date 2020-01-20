@@ -13,6 +13,7 @@ class NormalBubble(Bubble):
         self.speedMin = 7
         self.speedMax = 16
         self.scoreMultiplier = 1
+        
         BubblePriorityCalculator.add(self, 150000)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
@@ -32,6 +33,7 @@ class SpeedyBubble(Bubble):
         self.speedMin = 22
         self.speedMax = 28
         self.scoreMultiplier = 1
+
         BubblePriorityCalculator.add(self, 50000)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
@@ -51,6 +53,7 @@ class DoubleBubble(Bubble):
         self.speedMin = 22
         self.speedMax = 32
         self.scoreMultiplier = 2
+
         BubblePriorityCalculator.add(self, 20000)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
@@ -110,6 +113,7 @@ class LifeBubble(Bubble):
         self.speedMin = 32
         self.speedMax = 42
         self.scoreMultiplier = 0
+
         BubblePriorityCalculator.add(self, 15000)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
