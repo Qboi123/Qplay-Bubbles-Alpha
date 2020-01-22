@@ -129,7 +129,7 @@ class PauseGUI(object):
                 image, self.currentX, self.currentY, batch=event.batch)
             self.sprites[bubble.get_unlocalized_name()+".label"] = Label(
                 Resources.get_localized_name(f"bubble.{bubble.get_unlocalized_name()}.name"),
-                "Arial", 15, color=(255, 255, 255, 127), x=self.currentX + 30, y=self.currentY - 7.5)
+                "Arial", 15, color=(255, 255, 255, 255), x=self.currentX + 30, y=self.currentY - 7.5)
             self.currentY -= 48
             if self.currentY <= self.endY:
                 self.currentY = self.startY

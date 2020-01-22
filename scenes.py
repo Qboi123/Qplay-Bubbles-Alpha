@@ -15,6 +15,7 @@ from map import Map
 from objects import Collidable
 from resources import Resources
 from sprites.player import Player
+from utils import ROTATION_SPEED, MOTION_SPEED
 
 
 class AudioEngine:
@@ -110,6 +111,11 @@ class GameScene(Scene):
         self.player_rot_strafe = 0
         self.player_mpx_strafe = 0
 
+    def reset_strafe(self):
+        # Define local player variables
+        self.player_rot_strafe = 0
+        self.player_mpx_strafe = 0
+
     def init_scene(self):
         self.gameGUI = GameGUI(self)
         self.effectGUI = EffectGUI(self)
@@ -120,7 +126,7 @@ class GameScene(Scene):
         self.map: Map = Map()
         self.fps: Label = Label("0 FPS", "helverica", 14, False, True, x=self.window.width, y=self.window.height,
                                 width=self.window.width, anchor_x="right", anchor_y="top", align="right",
-                                multiline=False, batch=self.batch)
+                                multiline=False, batch=self.batch, color=(255, 255, 255, 127))
 
         if not self.scene_manager.save.load_save(self):
             self.random = Random(4096)
@@ -154,6 +160,63 @@ class GameScene(Scene):
             print("Line %s | File %s - %s: %s" % (
                 tb.tb_lineno, tb.tb_frame.f_code.co_filename, str(e.__class__.__name__), str(e.args[0])))
 
+    def safe_change_key(self, old, new, rot_strafe, mot_strafe):
+        self.on_key_release(old, [])
+        self.on_key_press(new, [])
+        # if old == key.LEFT and rot_strafe == -ROTATION_SPEED:
+        #     self.on_key_release(old, [])
+        #     self.on_key_press(new, [])
+        #     # if old == key.LEFT:
+        #     #     pass
+        #     # elif old == key.RIGHT:
+        #     #     self.player_rot_strafe += ROTATION_SPEED * 2
+        #     # elif old == key.UP:
+        #     #     self.player_rot_strafe += ROTATION_SPEED
+        #     #     self.player_mpx_strafe -= MOTION_SPEED
+        #     # elif old == key.DOWN:
+        #     #     self.player_rot_strafe += ROTATION_SPEED
+        #     #     self.player_mpx_strafe += MOTION_SPEED
+        # elif old == key.RIGHT and rot_strafe == ROTATION_SPEED:
+        #     self.on_key_release(old, [])
+        #     self.on_key_press(new, [])
+        #
+        #     # if old == key.LEFT:
+        #     #     self.player_rot_strafe -= ROTATION_SPEED * 2
+        #     # elif old == key.RIGHT:
+        #     #     pass
+        #     # elif old == key.UP:
+        #     #     self.player_rot_strafe -= ROTATION_SPEED
+        #     #     self.player_mpx_strafe -= MOTION_SPEED
+        #     # elif old == key.DOWN:
+        #     #     self.player_rot_strafe -= ROTATION_SPEED
+        #     #     self.player_mpx_strafe += MOTION_SPEED
+        # elif old == key.UP and mot_strafe == -MOTION_SPEED:
+        #     self.on_key_release(old, [])
+        #     self.on_key_press(new, [])
+        #     # if old == key.LEFT:
+        #     #     self.player_mpx_strafe += MOTION_SPEED
+        #     #     self.player_rot_strafe -= ROTATION_SPEED
+        #     # elif old == key.RIGHT:
+        #     #     self.player_mpx_strafe += MOTION_SPEED
+        #     #     self.player_rot_strafe += ROTATION_SPEED
+        #     # elif old == key.UP:
+        #     #     pass
+        #     # elif old == key.DOWN:
+        #     #     self.player_mpx_strafe += MOTION_SPEED * 2
+        # elif old == key.DOWN and mot_strafe == MOTION_SPEED:
+        #     self.on_key_release(old, [])
+        #     self.on_key_press(new, [])
+        #     # if old == key.LEFT:
+        #     #     self.player_mpx_strafe -= MOTION_SPEED
+        #     #     self.player_rot_strafe -= ROTATION_SPEED
+        #     # elif old == key.RIGHT:
+        #     #     self.player_mpx_strafe -= MOTION_SPEED
+        #     #     self.player_rot_strafe += ROTATION_SPEED
+        #     # elif old == key.UP:
+        #     #     self.player_mpx_strafe -= MOTION_SPEED * 2
+        #     # elif old == key.DOWN:
+        #     #     pass
+
     # noinspection PyUnusedLocal
     def on_key_press(self, symbol, modifiers):
         if symbol == key.ESCAPE:
@@ -164,14 +227,13 @@ class GameScene(Scene):
             return pyglet.event.EVENT_HANDLED
         if not self.pauseMode:
             if symbol == self.motionKeys[0]:
-                self.player_rot_strafe -= 5
+                self.player_rot_strafe -= ROTATION_SPEED
             if symbol == self.motionKeys[1]:
-                self.player_rot_strafe += 5
-
+                self.player_rot_strafe += ROTATION_SPEED
             if symbol == self.motionKeys[2]:
-                self.player_mpx_strafe += 10
+                self.player_mpx_strafe += MOTION_SPEED
             if symbol == self.motionKeys[3]:
-                self.player_mpx_strafe -= 10
+                self.player_mpx_strafe -= MOTION_SPEED
 
     # noinspection PyUnusedLocal
     def on_key_release(self, symbol, modifiers):
@@ -179,14 +241,14 @@ class GameScene(Scene):
             return pyglet.event.EVENT_HANDLED
         if not self.pauseMode:
             if symbol == self.motionKeys[0]:
-                self.player_rot_strafe += 5
+                self.player_rot_strafe += ROTATION_SPEED
             if symbol == self.motionKeys[1]:
-                self.player_rot_strafe -= 5
+                self.player_rot_strafe -= ROTATION_SPEED
 
             if symbol == self.motionKeys[2]:
-                self.player_mpx_strafe -= 10
+                self.player_mpx_strafe -= MOTION_SPEED
             if symbol == self.motionKeys[3]:
-                self.player_mpx_strafe += 10
+                self.player_mpx_strafe += MOTION_SPEED
 
     def update(self, dt):
         # To avoid handling collisions twice, we employ nested loops of ranges.

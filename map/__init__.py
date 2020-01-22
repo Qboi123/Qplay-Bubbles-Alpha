@@ -10,7 +10,7 @@ from bubble import BubbleObject, Bubble, BubblePriorityCalculator
 from events import TickUpdateEvent, UpdateEvent, DrawEvent, BubbleRemoveEvent
 from noise import SimplexNoiseGen
 from sprites.objects import PhysicalObject
-from utils import randint_lookup
+from utils import randint_lookup, MIN_BUBBLE_SIZE, MAX_BUBBLE_SIZE
 
 
 class Map(object):
@@ -26,7 +26,7 @@ class Map(object):
 
     def create_random_bubble(self, x, batch, objects, scene, random=random):
         # size_rand = random.random(self.tick_updates, 1)
-        size_randint = random.randint(21, 80)  # size_rand * 50 + 10
+        size_randint = random.randint(MIN_BUBBLE_SIZE, MAX_BUBBLE_SIZE)  # size_rand * 50 + 10
 
         y_randint = random.randint(int(size_randint / 2), scene.window.height - 72 - int(size_randint / 2))
 

@@ -1,8 +1,10 @@
 import random
+from copy import copy
 from time import time
 from typing import Optional
 
 from pyglet import resource
+from pyglet.window import key
 
 import globals as g
 from events import EffectUpdateEvent, UpdateEvent, TickUpdateEvent, EffectStoppedEvent, EffectStartedEvent, \
@@ -11,6 +13,9 @@ from exceptions import UnlocalizedNameError
 
 
 # noinspection PyPep8Naming
+from utils import ROTATION_SPEED, MOTION_SPEED
+
+
 class AppliedEffect(object):
     def __init__(self, base_class, time_length, scene, strength_multiply=1, incompatibles=[],
                  icon=resource.image("textures/gui/effect_icon_src.png"), dead=False):
@@ -275,13 +280,147 @@ class GhostEffect(Effect):
 class ConfusionEffect(Effect):
     def __init__(self):
         super(ConfusionEffect, self).__init__()
+        self.incompatibles = [ConfusionEffect]
 
         self.set_unlocalized_name("confusion")
         self.old: Optional[list] = None
 
     def on_effect_started(self, appliedeffect: AppliedEffect, scene):
         self.old = scene.motionKeys.copy()
-        random.shuffle(scene.motionKeys)
+        self.new = scene.motionKeys.copy()
+        random.shuffle(self.new)
+        LEFT = 0
+        RIGHT = 1
+        UP = 3
+        DOWN = 2
+
+        LEFT2 = self.new[LEFT]
+        RIGHT2 = self.new[RIGHT]
+        UP2 = self.new[UP]
+        DOWN2 = self.new[DOWN]
+
+        keys = {key.LEFT: "<KEY LEFT>",
+                key.RIGHT: "<KEY RIGHT>",
+                key.UP: "<KEY UP>",
+                key.DOWN: "<KEY DOWN>"}
+
+        news = {key.LEFT: "<NEW LEFT>",
+                key.RIGHT: "<NEW RIGHT>",
+                key.UP: "<NEW UP>",
+                key.DOWN: "<NEW DOWN>"}
+
+        print(f"OLD: {self.old}")
+        print(f"NEW: {self.new}")
+
+        print()
+
+        print(f"<NEW LEFT>={LEFT2}")
+        print(f"<NEW RIGHT>={RIGHT2}")
+        print(f"<NEW UP>={UP2}")
+        print(f"<NEW DOWN>={DOWN2}")
+
+        print()
+
+        print(f"<KEY LEFT>={key.LEFT}")
+        print(f"<KEY RIGHT>={key.RIGHT}")
+        print(f"<KEY UP>={key.UP}")
+        print(f"<KEY DOWN>={key.DOWN}")
+
+        print()
+
+        print(f"LEFT={keys[LEFT2]}")
+        print(f"RIGHT={keys[RIGHT2]}")
+        print(f"UP={keys[UP2]}")
+        print(f"DOWN={keys[DOWN2]}")
+
+        old_mpx_strafe = copy(scene.player_mpx_strafe)
+        old_rot_strafe = copy(scene.player_rot_strafe)
+
+        rot_strafe = {-ROTATION_SPEED: keys[key.LEFT],
+                      ROTATION_SPEED: keys[key.RIGHT],
+                      0: ""}
+
+        mot_strafe = {-MOTION_SPEED: keys[key.UP],
+                      MOTION_SPEED: keys[key.DOWN],
+                      0: ""}
+
+        print()
+
+        print(f"Rotation Strafe: {old_rot_strafe}")
+        print(f"Motion Strafe: {old_mpx_strafe}")
+        print(f"Rota- / Motion Keys: {[keys[key] for key in self.old]}")
+
+        a = [rot_strafe[old_rot_strafe], mot_strafe[old_mpx_strafe]]
+
+        print(f"Keys: {a}")
+
+        scene.motionKeys = self.new
+
+        scene.safe_change_key(key.LEFT, LEFT2, old_rot_strafe, old_mpx_strafe)
+        scene.safe_change_key(key.RIGHT, RIGHT2, old_rot_strafe, old_mpx_strafe)
+        scene.safe_change_key(key.UP, UP2, old_rot_strafe, old_mpx_strafe)
+        scene.safe_change_key(key.DOWN, DOWN2, old_rot_strafe, old_mpx_strafe)
+
+        print()
+
+        print(f"Rotation Strafe: {scene.player_rot_strafe}")
+        print(f"Motion Strafe: {scene.player_mpx_strafe}")
+        print(f"Rota- / Motion Keys: {[keys[key] for key in self.new]}")
+
+        b = [rot_strafe[scene.player_rot_strafe], mot_strafe[scene.player_mpx_strafe]]
+
+        print(f"Keys: {b}")
+
+        # if old_rot_strafe < 0:
+        #     print(f"<NEW LEFT> == <KEY LEFT>: {LEFT2 == key.LEFT}")
+        #     print(f"<NEW LEFT> == <KEY RIGHT>: {LEFT2 == key.RIGHT}")
+        #     print(f"<NEW LEFT> == <KEY UP>: {LEFT2 == key.UP}")
+        #     print(f"<NEW LEFT> == <KEY DOWN>: {LEFT2 == key.DOWN}")
+        #     if LEFT2 == key.LEFT:
+        #         pass
+        #     elif LEFT2 == key.RIGHT:
+        #         scene.player_rot_strafe += ROTATION_SPEED * 2
+        #     elif LEFT2 == key.UP:
+        #         scene.player_rot_strafe += ROTATION_SPEED
+        #         scene.player_mpx_strafe -= MOTION_SPEED
+        #     elif LEFT2 == key.DOWN:
+        #         scene.player_rot_strafe += ROTATION_SPEED
+        #         scene.player_mpx_strafe += MOTION_SPEED
+        # elif old_rot_strafe > 0:
+        #     if RIGHT2 == key.LEFT:
+        #         scene.player_rot_strafe -= ROTATION_SPEED * 2
+        #     elif RIGHT2 == key.RIGHT:
+        #         pass
+        #     elif RIGHT2 == key.UP:
+        #         scene.player_rot_strafe -= ROTATION_SPEED
+        #         scene.player_mpx_strafe -= MOTION_SPEED
+        #     elif RIGHT2 == key.DOWN:
+        #         scene.player_rot_strafe -= ROTATION_SPEED
+        #         scene.player_mpx_strafe += MOTION_SPEED
+        # if old_mpx_strafe < 0:
+        #     if UP2 == key.LEFT:  # UP to LEFT
+        #         scene.player_mpx_strafe += MOTION_SPEED
+        #         scene.player_rot_strafe -= ROTATION_SPEED
+        #     elif UP2 == key.RIGHT:  # UP to RIGHT
+        #         scene.player_mpx_strafe += MOTION_SPEED
+        #         scene.player_rot_strafe += ROTATION_SPEED
+        #     elif UP2 == key.UP:
+        #         pass
+        #     elif UP2 == key.DOWN:
+        #         scene.player_mpx_strafe += ROTATION_SPEED * 2
+        # elif old_mpx_strafe > 0:
+        #     if DOWN2 == key.LEFT:
+        #         scene.player_mpx_strafe -= MOTION_SPEED
+        #         scene.player_rot_strafe -= ROTATION_SPEED
+        #     elif DOWN2 == key.RIGHT:
+        #         scene.player_mpx_strafe -= MOTION_SPEED
+        #         scene.player_rot_strafe += ROTATION_SPEED
+        #     elif DOWN2 == key.UP:
+        #         scene.player_mpx_strafe -= ROTATION_SPEED * 2
+        #     elif DOWN2 == key.DOWN:
+        #         pass
+        scene.player_rot_strafe = 0
+        scene.player_mpx_strafe = 0
 
     def on_effect_stopped(self, appliedeffect: AppliedEffect, scene):
         scene.motionKeys = self.old

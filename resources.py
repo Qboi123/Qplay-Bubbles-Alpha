@@ -100,10 +100,11 @@ class Resources(object):
 
         # Import utils, for creating bubble in dynamic resolution
         import utils
+        from utils import MIN_BUBBLE_SIZE, MAX_BUBBLE_SIZE
 
         # Initialize minimum and maximum size of the bubbles
-        _min = 21
-        _max = 80
+        _min = MIN_BUBBLE_SIZE  # 21
+        _max = MAX_BUBBLE_SIZE  # 80
 
         data = {}
         files = os.listdir("assets/models/bubbles")
@@ -143,7 +144,9 @@ class Resources(object):
             elif bubble_data["type"] == model_types[1]:
                 image = _pyglet.resource.image(os.path.join("textures/bubbles", bubble_data["texture"] +
                                                             ".png").replace("\\", "/"))
-                bub[bubble_id][image.width] = image
+                for i in range(_min, _max + 1):
+                    bub[bubble_id][i] = image
+                    center_image(bub[bubble_id][i])
 
         # print("Bubble dictionary: %s" % bub)
         # bub["normal_bubble"][i] = utils.createbubble_image((i, i), None, "white")

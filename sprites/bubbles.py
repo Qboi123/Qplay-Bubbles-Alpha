@@ -164,11 +164,11 @@ class SlownessBubble(Bubble):
         super(SlownessBubble, self).__init__()
 
         self.set_unlocalized_name("slowness_bubble")
-        self.speedMin = 18
-        self.speedMax = 29
+        self.speedMin = 3
+        self.speedMax = 12
         self.scoreMultiplier = 0.875
 
-        BubblePriorityCalculator.add(self, 5000)
+        BubblePriorityCalculator.add(self, 8000)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
         return BubbleObject(self, x, y, batch, size, speed)
@@ -186,7 +186,7 @@ class UltraBubble(Bubble):
         self.speedMax = 59
         self.scoreMultiplier = 10
 
-        BubblePriorityCalculator.add(self, 0)
+        BubblePriorityCalculator.add(self, 100)
 
     # noinspection PyUnusedLocal
     def __call__(self, x, y, map, batch, size=None, speed=None):
@@ -265,7 +265,7 @@ class DoubleScoreStatBubble(Bubble):
         self.speedMax = 33
         self.scoreMultiplier = 2
 
-        BubblePriorityCalculator.add(self, 1000)
+        BubblePriorityCalculator.add(self, 875)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
         return BubbleObject(self, x, y, batch, size, speed)
@@ -283,7 +283,7 @@ class TripleScoreStatBubble(Bubble):
         self.speedMax = 63
         self.scoreMultiplier = 2
 
-        BubblePriorityCalculator.add(self, 600)
+        BubblePriorityCalculator.add(self, 450)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
         return BubbleObject(self, x, y, batch, size, speed)

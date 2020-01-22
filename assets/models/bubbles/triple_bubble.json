@@ -1,9 +1,8 @@
 {
   "type": "bubble/dynamic",
   "colors": [
-    "blue",
-    "#007fff",
     "#00ffff",
-    "white"
+    "#00ffff",
+    "#00ffff"
   ]
 }
