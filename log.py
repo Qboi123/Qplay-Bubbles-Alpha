@@ -6,7 +6,8 @@ import traceback
 
 
 class Log(io.IOBase):
-    def __init__(self, file, std, name="Out"):
+    def __init__(self, file, std, name="Out", write_std=False):
+        self.writeStd = write_std
         self.file = file
         self.std = std
         self.name = name
@@ -19,12 +20,14 @@ class Log(io.IOBase):
         l = o.splitlines(True)
         for i in l:
             if self.old[-1] == "\n":
-                self.std.write(strftime(f"%d-%m-%Y %H:%M:%S | {self.name} | ", gmtime()) + i)
+                if self.writeStd:
+                    self.std.write(strftime(f"%d-%m-%Y %H:%M:%S | {self.name} | ", gmtime()) + i)
                 self.fp = open(self.file, "a+")
                 self.fp.write(strftime(f"%d-%m-%Y %H:%M:%S | {self.name} | ", gmtime()) + i)
                 self.fp.close()
             else:
-                self.std.write(i)
+                if self.writeStd:
+                    self.std.write(i)
                 self.fp = open(self.file, "a+")
                 self.fp.write(i)
                 self.fp.close()
@@ -49,7 +52,8 @@ class Log(io.IOBase):
 
     def read(self):
         import time
-        self.std.write("[{time}] [In]: ".format(time=time.ctime(time.time())))
+        if self.writeStd:
+            self.std.write("[{time}] [In]: ".format(time=time.ctime(time.time())))
 
         a = self.std.read()
         self.fp = open(self.file, "a+")

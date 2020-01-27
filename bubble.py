@@ -74,8 +74,8 @@ class BubbleObject(Collidable):
             size = smallest
         image = Resources.get_resource("bubbles", self.name, size)
 
-        if self.name == "ultra_bubble":
-            print(f"Size: {size}")
+        # if self.name == "ultra_bubble":
+        #     print(f"Size: {size}")
 
         # Properties
         self.speed = speed
