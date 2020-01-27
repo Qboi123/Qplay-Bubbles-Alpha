@@ -13,31 +13,39 @@ from exceptions import UnlocalizedNameError
 
 
 # noinspection PyPep8Naming
+from resources import Resources
 from utils import ROTATION_SPEED, MOTION_SPEED
 
 
+# noinspection PyPep8Naming,PyUnusedLocal
 class AppliedEffect(object):
-    def __init__(self, base_class, time_length, scene, strength_multiply=1, incompatibles=[],
-                 icon=resource.image("textures/gui/effect_icon_src.png"), dead=False):
+    def __init__(self, base_class, time_length, scene, strength_multiply=1, dead=False):
         activeTypes = [type(i) for i in scene.player.activeEffects]
 
-        for incompatible in incompatibles:
+        for incompatible in base_class.incompatibles:
             if incompatible in activeTypes:
                 self.dead = True
                 return
 
-        self.baseEffectClass: Effect = base_class
+        self.dead = dead
+
+        if dead:
+            return
 
         self.time = time()
 
         self.stopTime = time() + time_length
         self.strengthMultiply = strength_multiply
-        self.dead = dead
+
+        self.baseEffectClass: Effect = base_class
 
         self.pauseTime: Optional[float] = None
         self.pause = False
 
-        self.icon = icon
+        try:
+            self.icon = Resources.get_effect_resource(self.baseEffectClass.get_unlocalized_name())
+        except UnlocalizedNameError:
+            self.icon = Resources.get_effect_resource("effect_none")
 
         # print(self.strengthMultiply)
 
@@ -106,15 +114,15 @@ class AppliedEffect(object):
 class Effect(object):
     def __init__(self, call_when=lambda time_, strength, scene: True):
         self._call_when = call_when
-        self.icon = resource.image("textures/gui/effect_icon_src.png")
+        self.icon = resource.image("textures/effect/effect_none.png")
+        # self.icon = Resources.get_effect_resource()
         self.incompatibles = []
     
     def __call__(self, time_length, strength_multiply, scene):
         if self._call_when(time_length, strength_multiply, scene):
-            return AppliedEffect(self, time_length, scene, strength_multiply, self.incompatibles, self.icon)
+            return AppliedEffect(self, time_length, scene, strength_multiply)
         else:
-            appliedeffect = AppliedEffect(self, time_length, scene, strength_multiply, self.incompatibles, self.icon)
-            appliedeffect.dead = True
+            appliedeffect = AppliedEffect(self, time_length, scene, strength_multiply, dead=True)
             return appliedeffect
 
     def set_unlocalized_name(self, name):
@@ -175,14 +183,13 @@ class SpeedBoostEffect(Effect):
         super(SpeedBoostEffect, self).__init__(lambda time_, strength, scene: scene.player.motionSpeedMultiply < 2)
 
         self.incompatibles = [SlownessEffect, ParalyseEffect]
-        self.icon = resource.image("textures/effect/speed.png")
         self.set_unlocalized_name("speed_boost")
 
     def __call__(self, time_length, strength_multiply, scene):
         if scene.player.motionSpeedMultiply < 2:
-            return AppliedEffect(self, time_length, scene, strength_multiply, self.incompatibles, self.icon)
+            return AppliedEffect(self, time_length, scene, strength_multiply)
         else:
-            appliedeffect = AppliedEffect(self, time_length, scene, strength_multiply, self.incompatibles, self.icon)
+            appliedeffect = AppliedEffect(self, time_length, scene, strength_multiply)
             appliedeffect.dead = True
             return appliedeffect
 
@@ -199,7 +206,7 @@ class SlownessEffect(Effect):
                                              (scene.player.motionSpeedMultiply - (0.5 * strength_multiply) >= 0))
 
         self.incompatibles = [SpeedBoostEffect, ParalyseEffect]
-        self.icon = resource.image("textures/effect/slow.png")
+        self.icon = resource.image("textures/effect/slowness.png")
         self.set_unlocalized_name("slowness")
 
     # def __call__(self, time_length, strength_multiply, scene):
@@ -293,6 +300,8 @@ class ConfusionEffect(Effect):
         RIGHT = 1
         UP = 3
         DOWN = 2
+
+        from pyglet.window import key
 
         LEFT2 = self.new[LEFT]
         RIGHT2 = self.new[RIGHT]

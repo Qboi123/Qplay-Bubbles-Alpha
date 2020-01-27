@@ -8,6 +8,7 @@ import yaml
 from typing import Dict as _Dict, Dict, List, Union
 
 import exceptions
+from utils import Directory
 from utils.image.pyglet import center_image
 
 
@@ -207,6 +208,13 @@ class Resources(object):
         # center_image(bub["ultra_mode_bubble"][48])
         return bub
 
+    def load_effect_icons(self):
+        directory = Directory("assets/textures/effect")
+        files = directory.listfiles()
+        for file in files:
+            self.__resources["effect"][os.path.splitext(file.fileName)[0]] = \
+                _pyglet.resource.image(name=f"textures/effect/{file.fileName}")
+
     def load(self):
         Resources.no_image = _pyglet.resource.image("no_image.png")
         Resources.no_image_circle = _pyglet.resource.image("no_image_circle.png")
@@ -275,3 +283,15 @@ class Resources(object):
             return cls.lang[id_]
         except KeyError:
             return "N/A"
+
+    @classmethod
+    def get_texture_resource(cls, *args):
+        cls.get_resource("texture", *args)
+
+    @classmethod
+    def get_gui_resource(cls, *args):
+        cls.get_texture_resource("gui", *args)
+
+    @classmethod
+    def get_effect_resource(cls, id_):
+        cls.get_texture_resource("effect", id_)

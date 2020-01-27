@@ -21,16 +21,16 @@ if __name__ == '__main__':
     startup = time.time()
     startup2 = time.ctime(startup).replace(" ", "-").replace(":", ".")
 
-    if not os.path.exists("../../logs"):
-        os.makedirs("../../logs")
+    # if not os.path.exists("../../logs"):
+    #     os.makedirs("../../logs")
+    #
+    # if not os.path.exists("../../logs"):
+    #     os.makedirs("../../logs")
 
-    if not os.path.exists("../../logs"):
-        os.makedirs("../../logs")
-
-    log_file = time.strftime("%M-%d-%Y %H.%M.%S.log", time.gmtime(startup))
+    log_file = time.strftime(f"%d-%m-%Y %H_%M_%S.log", time.gmtime(startup))
 
     stderr = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stderr__, "ERROR")
-    stdwrn = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stderr__, "WARNING")
+    stdwrn = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stderr__, "WARN")
     stdout = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stdout__, "Info")
     stdbug = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stdout__, "Debug")
     stdin = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stdout__, "Input")
