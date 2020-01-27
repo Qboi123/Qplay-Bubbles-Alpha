@@ -21,24 +21,19 @@ if __name__ == '__main__':
     startup = time.time()
     startup2 = time.ctime(startup).replace(" ", "-").replace(":", ".")
 
-    if not os.path.exists("../../logs"):
-        os.makedirs("../../logs")
+    # if not os.path.exists("../../logs"):
+    #     os.makedirs("../../logs")
+    #
+    # if not os.path.exists("../../logs"):
+    #     os.makedirs("../../logs")
 
-    if not os.path.exists("../../logs"):
-        os.makedirs("../../logs")
+    log_file = time.strftime(f"%d-%m-%Y %H_%M_%S.log", time.gmtime(startup))
 
-    if "--debug" in sys.argv:
-        write_std = True
-    else:
-        write_std = False
-
-    log_file = time.strftime("%M-%d-%Y %H.%M.%S.log", time.gmtime(startup))
-
-    stderr = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stderr__, "ERROR", write_std)
-    stdwrn = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stderr__, "WARNING", write_std)
-    stdout = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stdout__, "Info", write_std)
-    stdbug = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stdout__, "Debug", write_std)
-    stdin = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stdout__, "Input", write_std)
+    stderr = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stderr__, "ERROR")
+    stdwrn = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stderr__, "WARN")
+    stdout = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stdout__, "Info")
+    stdbug = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stdout__, "Debug")
+    stdin = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stdout__, "Input")
 
     sys.stdbug = stdbug
     sys.stdwrn = stdwrn

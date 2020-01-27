@@ -32,6 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from random import Random
 
+from nbt.nbt import *
 from pyglet.graphics import Batch
 from typing import Dict, Tuple, Union, Type, List
 
@@ -94,7 +95,73 @@ class SaveManager(object):
         if 1:
             # Load file
             with open(save_file_path, 'rb') as file:
+                # noinspection PyBroadException
+                # try:
                 loaded_save: Dict[str, Union[List[Tuple], Tuple, Random]] = pickle.load(file)
+                nbt = None
+                # except Exception:
+                #     loaded_save = None
+                #     nbt = NBTFile(fileobj=file)
+
+            if (not nbt) and loaded_save:
+                nbt = NBTFile()
+
+                nbt_data = {
+                    "Player": {
+                        "Effects": [
+                            TAG_Compound,
+                            *({
+                                "id": id_,
+                                "time": time,
+                                "strength": strength
+                            } for id_, time, strength in loaded_save["effects"])
+                        ],
+                        "Abilities": {
+                            "ghostMode": int(loaded_save["player"][0][4])
+                        },
+                        "rot": loaded_save["player"][0][3],
+                        "pos": [
+                            TAG_Long,
+                            int(loaded_save["player"][0][2].x),
+                            int(loaded_save["player"][0][2].y)
+                        ],
+                        "score": loaded_save["player"][0][1],
+                        "lives": loaded_save["player"][0][0]
+                    },
+                    "Map": {
+                        "Bubbles": [
+                            TAG_Compound,
+                            *({
+                                "id": id_,
+                                "size": size,
+                                "speed": speed,
+                                "pos": [
+                                    TAG_Long,
+                                    int(pos.x),
+                                    int(pos.y)
+                                ]
+                            } for id_, size, speed, pos in loaded_save["bubbles"])
+                        ]
+                    }
+                }
+
+                save_file2 = self.save_file.format('Save-{}.nbt')
+                save_file_path2 = os.path.join(self.save_path, save_file2)
+
+                nbt.write_file(save_file_path2)
+
+                # player_nbt = TAG_Compound()
+                # player_nbt["rot"] = TAG_Float(loaded_save["player"][0][3])
+                # player_nbt["pos"] = TAG_List(TAG_Float, [TAG_Float(loaded_save["player"][0][2][i]) for i in range(2)])
+                # player_nbt["Score"] = TAG_Long(loaded_save["player"][0][1])
+                # player_nbt["Lives"] = TAG_Long(loaded_save["player"][0][0])
+                # nbt["Player"] = player_nbt
+                #
+                # version_nbt = TAG_Compound()
+                # version_nbt["Type"] = TAG_String()
+                #
+                # nbt["Version"] =
+
 
             # print(f"Loaded Save Data: {loaded_save}")
 
