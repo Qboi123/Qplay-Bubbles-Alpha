@@ -234,6 +234,9 @@ class Resources(object):
 
         self.__resources["gui"] = dict()
         self.__resources["gui"]["scoreboard_bg"] = _pyglet.resource.image("textures/gui/scoreboardBackground.png")
+
+        self.__resources["effect"] = dict()
+        self.load_effect_icons()
         # print(player.__dict__)
         # print(player.__repr__())
         center_image(self.__resources["player"])
@@ -286,12 +289,12 @@ class Resources(object):
 
     @classmethod
     def get_texture_resource(cls, *args):
-        cls.get_resource("texture", *args)
+        return cls.get_resource("texture", *args)
 
     @classmethod
     def get_gui_resource(cls, *args):
-        cls.get_texture_resource("gui", *args)
+        return cls.get_texture_resource("gui", *args)
 
     @classmethod
     def get_effect_resource(cls, id_):
-        cls.get_texture_resource("effect", id_)
+        return cls.get_resource("effect", id_)

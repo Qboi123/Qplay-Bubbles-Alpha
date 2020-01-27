@@ -254,7 +254,7 @@ class ScoreStatusEffect(Effect):
         super(ScoreStatusEffect, self).__init__()
 
         self.incompatibles = [ScoreStatusEffect]
-        self.icon = resource.image("textures/effect/scoreStat.png")
+        self.icon = resource.image("textures/effect/score_status.png")
         self.set_unlocalized_name("score_status")
         self.bindings = dict()
 
@@ -274,7 +274,7 @@ class GhostEffect(Effect):
         super(GhostEffect, self).__init__()
 
         self.incompatibles = [GhostEffect]
-        self.icon = resource.image("textures/effect/ghostMode.png")
+        self.icon = resource.image("textures/effect/ghost_mode.png")
         self.set_unlocalized_name("ghost_mode")
 
     def on_effect_started(self, appliedeffect: AppliedEffect, scene):

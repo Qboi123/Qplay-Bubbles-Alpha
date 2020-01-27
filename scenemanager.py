@@ -96,6 +96,7 @@ class SceneManager(object):
         self.current_scene.update(dt)
 
     def tick_update(self, dt):
+        # print("TICKUPDATE1")
         if hasattr(self.current_scene, "tick_update"):
             self.current_scene.tick_update(dt)
 

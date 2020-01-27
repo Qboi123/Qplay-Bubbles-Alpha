@@ -51,6 +51,7 @@ from effects import Effect
 from events import AutoSaveEvent
 from sprites.player import Player
 from map import Map
+from utils.nbt_file import get_nbt
 
 
 class SaveManager(object):
@@ -104,12 +105,10 @@ class SaveManager(object):
                 #     nbt = NBTFile(fileobj=file)
 
             if (not nbt) and loaded_save:
-                nbt = NBTFile()
-
                 nbt_data = {
                     "Player": {
                         "Effects": [
-                            TAG_Compound,
+                            dict,
                             *({
                                 "id": id_,
                                 "time": time,
@@ -121,7 +120,7 @@ class SaveManager(object):
                         },
                         "rot": loaded_save["player"][0][3],
                         "pos": [
-                            TAG_Long,
+                            int,
                             int(loaded_save["player"][0][2].x),
                             int(loaded_save["player"][0][2].y)
                         ],
@@ -130,13 +129,13 @@ class SaveManager(object):
                     },
                     "Map": {
                         "Bubbles": [
-                            TAG_Compound,
+                            dict,
                             *({
                                 "id": id_,
                                 "size": size,
                                 "speed": speed,
                                 "pos": [
-                                    TAG_Long,
+                                    int,
                                     int(pos.x),
                                     int(pos.y)
                                 ]
@@ -144,8 +143,9 @@ class SaveManager(object):
                         ]
                     }
                 }
+                nbt = get_nbt(nbt_data)
 
-                save_file2 = self.save_file.format('Save-{}.nbt')
+                save_file2 = 'Save-{}.nbt'.format(self.save_name)
                 save_file_path2 = os.path.join(self.save_path, save_file2)
 
                 nbt.write_file(save_file_path2)

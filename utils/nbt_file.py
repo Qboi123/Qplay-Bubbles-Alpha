@@ -89,6 +89,9 @@ def get(tag: TAG) -> Union[str, int, float, list, dict]:
     elif type(tag) == TAG_Short:
         tag: TAG_Short
         return get_short(tag)
+    elif type(tag) == TAG_Float:
+        tag: TAG_Float
+        return get_float(tag)
     elif type(tag) == TAG_String:
         tag: TAG_String
         return get_string(tag)
@@ -131,9 +134,16 @@ def get_byte(tag: TAG_Byte) -> int:
     return tag.value
 
 
-def get_compound(tag: NBTFile) -> Dict[str, Union[str, int, float, list, dict]]
+def get_compound(tag: TAG_Compound) -> Dict[str, Union[str, int, float, list, dict]]:
     dict_ = {}
     for key, value in tag.items():
+        dict_[key] = get(value)
+    return dict_
+
+
+def get_file(nbt_: NBTFile) -> Dict[str, Union[str, int, float, list, dict]]:
+    dict_ = {}
+    for key, value in nbt_.items():
         dict_[key] = get(value)
     return dict_
 

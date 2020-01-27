@@ -253,6 +253,7 @@ class GameScene(Scene):
     def update(self, dt):
         # To avoid handling collisions twice, we employ nested loops of ranges.
         # This method also avoids the problem of colliding an object with itself.
+        # print("Update")
         if self.pauseMode:
             return
         for i in range(len(self.game_objects)):

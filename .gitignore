@@ -20,3 +20,4 @@ gen
 *.log
 assets/sfx/takeout-20200116T200526Z-001.zip
 *.pyc
+/test/
