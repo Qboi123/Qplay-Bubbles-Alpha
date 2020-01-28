@@ -130,7 +130,7 @@ class GameScene(Scene):
 
         if not self.scene_manager.save.load_save(self):
             self.random = Random(4096)
-
+            self.map.init_bubbles(self)
         self.player.refresh()
         self.fps_text = "FPS: 0"
 

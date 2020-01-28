@@ -34,7 +34,7 @@ from random import Random
 
 from nbt.nbt import *
 from pyglet.graphics import Batch
-from typing import Dict, Tuple, Union, Type, List
+from typing import Dict, Tuple, Union, Type, List, Optional
 
 import pyglet
 import pickle
@@ -49,8 +49,10 @@ from time import gmtime, strftime
 from bubble import BubbleObject
 from effects import Effect
 from events import AutoSaveEvent
+from nzt import NZTFile
 from sprites.player import Player
 from map import Map
+from utils.classes import Position2D
 from utils.nbt_file import get_nbt
 
 
@@ -65,10 +67,11 @@ class SaveManager(object):
         """
 
         # Get the appropriate OS specific save path:
-        self.save_path = os.path.join(pyglet.resource.get_settings_path('Qplay Bubbles'), "saves")
-        print(f"Save Path: {self.save_path}")
-        self.save_file = 'Save-{}.dat'
-        self.config_file = 'config.json'
+        self.savePath = os.path.join(pyglet.resource.get_settings_path('Qplay Bubbles'), "saves")
+        print(f"Save Path: {self.savePath}")
+        self.saveFileOLD = 'Save-{}.dat'
+        self.saveFile = 'Save-{}.nzt'
+        self.configFile = 'config.json'
         self.save_name = "TEST"
 
         self._data = {'revision': 0,
@@ -83,87 +86,124 @@ class SaveManager(object):
 
     def has_save_game(self):
         """Returns True if the save path and file exist."""
-        save_file = self.save_file.format(self.save_name)
-        return os.path.exists(os.path.join(self.save_path, save_file))
+        save_file = self.saveFileOLD.format(self.save_name)
+        return os.path.exists(os.path.join(self.savePath, save_file))
 
     def load_save(self, scene):
         # Initialize loading save
-        save_file = self.save_file.format(self.save_name)
-        save_file_path = os.path.join(self.save_path, save_file)
+        save_file_old = self.saveFileOLD.format(self.save_name)
+        save_file_old_path = os.path.join(self.savePath, save_file_old)
+
+        save_file = self.saveFile.format(self.save_name)
+        save_file_path = os.path.join(self.savePath, save_file)
+
+        if (not os.path.exists(save_file_old_path)) and (not os.path.exists((save_file_path))):
+            self.timestamp_print("Can't load, save not exists")
+            return False
+
         self.timestamp_print('Start loading')
+
+        nzt_data: Optional[Dict] = None
+
+        nzt_data: Optional[Dict] = {
+            "Player": {
+                "Effects": [
+                    {
+                        "id": str(),
+                        "time": float(),
+                        "strength": float()
+                    }
+                ],
+                "Abilities": {
+                    "ghostMode": bool()
+                },
+                "rot": int(),
+                "pos": [
+                    float(),
+                    float()
+                ],
+                "score": int(),
+                "lives": int()
+            },
+            "Map": {
+                "Bubbles": [
+                    {
+                        "id": str(),
+                        "size": int(),
+                        "speed": float(),
+                        "pos": [
+                            float(),
+                            float()
+                        ]
+                    }
+                ]
+            }
+        }
+
+        loaded_save: Optional[Dict[str, Union[List[Tuple], Tuple, Random]]] = None
 
         # try:
         if 1:
             # Load file
-            with open(save_file_path, 'rb') as file:
-                # noinspection PyBroadException
-                # try:
-                loaded_save: Dict[str, Union[List[Tuple], Tuple, Random]] = pickle.load(file)
-                nbt = None
-                # except Exception:
-                #     loaded_save = None
-                #     nbt = NBTFile(fileobj=file)
+            if os.path.exists(save_file_path):
+                nzt_file = NZTFile(save_file_path, "r")
+                self.timestamp_print("Loading NZT-data")
+                nzt_data = nzt_file.load()
+                print(nzt_data)
+                nzt_file.close()
+            else:
+                with open(save_file_old_path, 'rb') as file:
+                    # noinspection PyBroadException
+                    try:
+                        loaded_save = pickle.load(file)
+                    except Exception as e:  # If loading fails for ANY reason, return False
+                        self.timestamp_print('Loading failed! Generating a new map.')
+                        self.timestamp_print(e.__class__.__name__ + ": " + e.__str__())
+                        return False
 
-            if (not nbt) and loaded_save:
-                nbt_data = {
-                    "Player": {
-                        "Effects": [
-                            dict,
-                            *({
-                                "id": id_,
-                                "time": time,
-                                "strength": strength
-                            } for id_, time, strength in loaded_save["effects"])
-                        ],
-                        "Abilities": {
-                            "ghostMode": int(loaded_save["player"][0][4])
-                        },
-                        "rot": loaded_save["player"][0][3],
-                        "pos": [
-                            int,
-                            int(loaded_save["player"][0][2].x),
-                            int(loaded_save["player"][0][2].y)
-                        ],
-                        "score": loaded_save["player"][0][1],
-                        "lives": loaded_save["player"][0][0]
+        if loaded_save:
+            nzt_data = {
+                "Player": {
+                    "Effects": [
+                        *({
+                            "id": id_,
+                            "time": time,
+                            "strength": strength
+                        } for id_, time, strength in loaded_save["effects"])
+                    ],
+                    "Abilities": {
+                        "ghostMode": int(loaded_save["player"][0][4])
                     },
-                    "Map": {
-                        "Bubbles": [
-                            dict,
-                            *({
-                                "id": id_,
-                                "size": size,
-                                "speed": speed,
-                                "pos": [
-                                    int,
-                                    int(pos.x),
-                                    int(pos.y)
-                                ]
-                            } for id_, size, speed, pos in loaded_save["bubbles"])
-                        ]
-                    }
-                }
-                nbt = get_nbt(nbt_data)
+                    "rot": loaded_save["player"][0][3],
+                    "pos": [
+                        loaded_save["player"][0][2].x,
+                        loaded_save["player"][0][2].y
+                    ],
+                    "score": loaded_save["player"][0][1],
+                    "lives": loaded_save["player"][0][0]
+                },
+                "Map": {
+                    "Bubbles": [
+                        *({
+                            "id": id_,
+                            "size": size,
+                            "speed": speed,
+                            "pos": [
+                                pos.x,
+                                pos.y
+                            ]
+                        } for id_, size, speed, pos in loaded_save["bubbles"])
+                    ]
+                },
+                "random": loaded_save["random"]
+            }
 
-                save_file2 = 'Save-{}.nbt'.format(self.save_name)
-                save_file_path2 = os.path.join(self.save_path, save_file2)
+            save_file2 = 'Save-{}.nzt'.format(self.save_name)
+            save_file_path2 = os.path.join(self.savePath, save_file2)
 
-                nbt.write_file(save_file_path2)
-
-                # player_nbt = TAG_Compound()
-                # player_nbt["rot"] = TAG_Float(loaded_save["player"][0][3])
-                # player_nbt["pos"] = TAG_List(TAG_Float, [TAG_Float(loaded_save["player"][0][2][i]) for i in range(2)])
-                # player_nbt["Score"] = TAG_Long(loaded_save["player"][0][1])
-                # player_nbt["Lives"] = TAG_Long(loaded_save["player"][0][0])
-                # nbt["Player"] = player_nbt
-                #
-                # version_nbt = TAG_Compound()
-                # version_nbt["Type"] = TAG_String()
-                #
-                # nbt["Version"] =
-
-
-            # print(f"Loaded Save Data: {loaded_save}")
+            nzt_file = NZTFile(save_file_path2, "w")
+            nzt_file.data = nzt_data
+            nzt_file.save()
 
             # Bubbles
             for name, size, speed, position in loaded_save["bubbles"]:
@@ -199,38 +239,117 @@ class SaveManager(object):
             # Completed
             self.timestamp_print('Loading completed.')
             return True
-        # except Exception as e:  # If loading fails for ANY reason, return False
-        #     self.timestamp_print('Loading failed! Generating a new map.')
-        #     self.timestamp_print(e.__class__.__name__ + ": " + e.__str__())
-        #     return False
+
+        else:
+            print("NZTData:", nzt_data)
+            # Bubbles
+            for bubble in nzt_data["Map"]["Bubbles"]:
+                scene.game_objects.append(
+                    scene.map.create_bubble(bubble["pos"][0], bubble["pos"][1], g.NAME2BUBBLE[bubble["id"]], scene.batch, bubble["size"], bubble["speed"],
+                                            scene))
+
+            # Player
+            lives = nzt_data["Player"]["lives"]
+            score = nzt_data["Player"]["score"]
+
+            pos = Position2D(nzt_data["Player"]["pos"])
+            rot = nzt_data["Player"]["rot"]
+
+            ghost_mode = nzt_data["Player"]["Abilities"]["ghostMode"]
+
+            scene.player._Player__position = pos
+            scene.player.rotation = rot
+            scene.player.score = score
+            scene.player.lives = lives
+            scene.player.ghostMode = ghost_mode
+
+            scene.player.refresh()
+
+            # Effects
+            for effect in nzt_data["Player"]["Effects"]:
+                effect: Dict
+                scene.player.add_effect(g.NAME2EFFECT[effect["id"]](effect["time"], effect["strength"], scene))
+
+            # Random
+            scene.random.setstate(nzt_data["random"])
+
+            # Completed
+            self.timestamp_print('Loading completed.')
+            return True
 
     def save_save(self, event: AutoSaveEvent):
-        save_file = self.save_file.format(self.save_name)
-        save_file_path = os.path.join(self.save_path, save_file)
+        # saveFileOLD = self.saveFileOLD.format(self.save_name)
+        # save_file_path = os.path.join(self.savePath, saveFileOLD)
         self.timestamp_print('Start saving')
 
-        # If the save directory doesn't exist, create it
-        if not os.path.exists(self.save_path):
-            self.timestamp_print(
-                'Creating directory: {}'.format(self.save_path))
-            os.makedirs(self.save_path)
+        nzt_data = {
+            "Player": {
+                "Effects": [
+                    *({
+                        "id": appliedeffect.baseEffectClass.get_unlocalized_name(),
+                        "time": appliedeffect.timeRemaining,
+                        "strength": appliedeffect.strengthMultiply
+                    } for appliedeffect in event.player.activeEffects)
+                ],
+                "Abilities": {
+                    "ghostMode": event.player.ghostMode
+                },
+                "rot": event.player.rotation,
+                "pos": [
+                    event.player.position.x,
+                    event.player.position.y
+                ],
+                "score": event.player.score,
+                "lives": event.player.lives
+            },
+            "Map": {
+                "Bubbles": [
+                    *({
+                        "id": bubbleobject.baseBubbleClass.get_unlocalized_name(),
+                        "size": bubbleobject.size,
+                        "speed": bubbleobject.speed,
+                        "pos": [
+                            bubbleobject.position.x,
+                            bubbleobject.position.y
+                        ]
+                    } for bubbleobject in event.map.bubbles)
+                ]
+            },
+            "random": event.scene.random.getstate()
+        }
 
-        # Efficiently save the save to a binary file
-        with open(save_file_path, 'wb+') as file:
-            # noinspection PyProtectedMember,SpellCheckingInspection
-            pickle.dump({"player": [(event.player.lives, event.player.score, event.player._Player__position,
-                                     event.player.rotation, event.player.ghostMode)],
-                         "bubbles": [(bubbleobject.name,
-                                      bubbleobject.size,
-                                      bubbleobject.speed,
-                                      bubbleobject.position
-                                      ) for bubbleobject in event.map.bubbles],
-                         "random": event.scene.random.getstate(),
-                         "effects": [(appliedeffect.baseEffectClass.get_unlocalized_name(),
-                                      appliedeffect._get_time_remaining(),
-                                      appliedeffect.strengthMultiply
-                                      ) for appliedeffect in event.player.activeEffects]
-                         }, file)
+        print(event.scene.random.getstate())
+
+        save_file = self.saveFile.format(self.save_name)
+        save_file_path = os.path.join(self.savePath, save_file)
+
+        nzt_file = NZTFile(save_file_path, "w")
+        nzt_file.data = nzt_data
+        nzt_file.save()
+
+        #
+        # # If the save directory doesn't exist, create it
+        # if not os.path.exists(self.savePath):
+        #     self.timestamp_print(
+        #         'Creating directory: {}'.format(self.savePath))
+        #     os.makedirs(self.savePath)
+        #
+        # # Efficiently save the save to a binary file
+        # with open(save_file_path, 'wb+') as file:
+        #     # noinspection PyProtectedMember,SpellCheckingInspection
+        #     pickle.dump({"player": [(event.player.lives, event.player.score, event.player._Player__position,
+        #                              event.player.rotation, event.player.ghostMode)],
+        #                  "bubbles": [(bubbleobject.name,
+        #                               bubbleobject.size,
+        #                               bubbleobject.speed,
+        #                               bubbleobject.position
+        #                               ) for bubbleobject in event.map.bubbles],
+        #                  "random": event.scene.random.getstate(),
+        #                  "effects": [(appliedeffect.baseEffectClass.get_unlocalized_name(),
+        #                               appliedeffect._get_time_remaining(),
+        #                               appliedeffect.strengthMultiply
+        #                               ) for appliedeffect in event.player.activeEffects]
+        #                  }, file)
 
         self.timestamp_print('Saving completed')
 

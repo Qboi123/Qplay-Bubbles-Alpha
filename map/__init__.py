@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from bubble import BubbleObject, BubblePriorityCalculator
 from events import TickUpdateEvent, UpdateEvent, DrawEvent, BubbleRemoveEvent, BubbleCreateEvent
-from utils import MIN_BUBBLE_SIZE, MAX_BUBBLE_SIZE
+from utils import MIN_BUBBLE_SIZE, MAX_BUBBLE_SIZE, MAXIMAL_BUBBLES
 
 
 class Map(object):
@@ -53,6 +53,19 @@ class Map(object):
         self.bubbles.append(bub)
         return bub
 
+    def init_bubbles(self, scene):
+        for _ in range(MAXIMAL_BUBBLES):
+            # size_rand = random.random(self.tick_updates, 1)
+            bubble = BubblePriorityCalculator.get(scene.random)
+
+            speed_randint = scene.random.randint(bubble.speedMin, bubble.speedMax)
+            size_randint = scene.random.randint(MIN_BUBBLE_SIZE, MAX_BUBBLE_SIZE)
+            x_randint = scene.random.randint(-int(size_randint / 2), scene.window.width + int(size_randint / 2))
+            y_randint = scene.random.randint(int(size_randint / 2), scene.window.height - 72 - int(size_randint / 2))
+
+            scene.game_objects.append(
+                self.create_bubble(x_randint, y_randint, bubble, scene.batch, size_randint, speed_randint, scene))
+
     def draw(self, event):
         pass
 
@@ -62,7 +75,7 @@ class Map(object):
                 self.remove_bubble(bubble, event.gameObjects, event.scene)
             elif bubble.dead:
                 self.remove_bubble(bubble, event.gameObjects, event.scene)
-        if len(self.bubbles) < 100:
+        if len(self.bubbles) < MAX_BUBBLE_SIZE:
             self.create_random_bubble(event.window.width, event.batch, event.gameObjects, event.scene, event.scene.random)
             self.tick_updates += 1
             self._bubCreateTime = time() + self._bubCreateInterval

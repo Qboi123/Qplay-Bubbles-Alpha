@@ -44,6 +44,7 @@ class AppliedEffect(object):
 
         try:
             self.icon = Resources.get_effect_resource(self.baseEffectClass.get_unlocalized_name())
+            print(self.icon)
         except UnlocalizedNameError:
             self.icon = Resources.get_effect_resource("effect_none")
 

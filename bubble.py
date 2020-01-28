@@ -113,13 +113,13 @@ class BubbleObject(Collidable):
                 dy = 0
 
                 speed_multiply = event.player.score / 100000
-                if speed_multiply < 0.5:
-                    speed_multiply = 0.5
+                if speed_multiply < 0.25:
+                    speed_multiply = 0.25
 
                 dx *= speed_multiply
 
                 # noinspection PyUnboundLocalVariable
-                self.position += (dx * event.dt * utils.TICKS_PER_SEC, dy * event.dt * utils.TICKS_PER_SEC)
+                self.position += (dx * event.dt * (1 / utils.TICKS_PER_SEC), dy * event.dt * (1 / utils.TICKS_PER_SEC))
                 self.sprite.update(x=self.position.x, y=self.position.y)
             BubbleUpdateEvent(event.dt, self, event.scene)
 

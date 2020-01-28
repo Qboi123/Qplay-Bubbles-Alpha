@@ -218,6 +218,7 @@ class Resources(object):
     def load(self):
         Resources.no_image = _pyglet.resource.image("no_image.png")
         Resources.no_image_circle = _pyglet.resource.image("no_image_circle.png")
+        Resources.no_image_effect = _pyglet.resource.image("textures/effect/effect_none.png")
         center_image(Resources.no_image_circle)
         self.status = "Indexing resources"
 
@@ -269,6 +270,9 @@ class Resources(object):
                 if len(resource_recursion) == 3:
                     return cls.no_image_circle
                 return {j: cls.no_image_circle for j in range(21, 81)}
+            elif resource_recursion[0] == "effect":
+                return cls.no_image_effect
+
             return cls.no_image
 
     @classmethod

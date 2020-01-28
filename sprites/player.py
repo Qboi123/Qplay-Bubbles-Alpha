@@ -56,7 +56,7 @@ class Player(Collidable):
 
         # Position and rotation
         self.rotation = 0
-        self.__position: Position2D = Position2D(pos)
+        self.position: Position2D = Position2D(pos)
 
         # Pause variable
         self.pause = False
@@ -78,7 +78,7 @@ class Player(Collidable):
         self.pause = False
 
     def refresh(self):
-        self.sprite.update(rotation=self.rotation, x=self.__position.x, y=self.__position.y)
+        self.sprite.update(rotation=self.rotation, x=self.position.x, y=self.position.y)
 
     def add_effect(self, effect):
         if not effect.dead:
@@ -181,7 +181,7 @@ class Player(Collidable):
 
         :return:
         """
-        return self.__position
+        return self.position
 
     @player_position.setter
     def player_position(self, value: Union[
@@ -192,9 +192,9 @@ class Player(Collidable):
         :param value:
         :return:
         """
-        self.__position = self.__position.__init__(value)
+        self.position = self.position.__init__(value)
         if not self.dead:
-            self.sprite.update(x=self.__position.x, y=self.__position.y)
+            self.sprite.update(x=self.position.x, y=self.position.y)
 
     def _removescore(self, value):
         """
@@ -243,21 +243,21 @@ class Player(Collidable):
 
                 dx, dy = dx * d * 10, dy * d * 10
 
-                position = self.__position + (dx * self.motionSpeedMultiply, dy * self.motionSpeedMultiply)
+                position = self.position + (dx * self.motionSpeedMultiply, dy * self.motionSpeedMultiply)
 
                 if self.sprite.width / 2 < position.x < self.scene.window.width - self.sprite.width / 2:
-                    self.__position.x = position.x
+                    self.position.x = position.x
                 elif not self.sprite.width / 2 < position.x:
-                    self.__position.x = self.sprite.width / 2
+                    self.position.x = self.sprite.width / 2
                 elif not position.x < self.scene.window.width - self.sprite.width / 2:
-                    self.__position.x = self.scene.window.width - self.sprite.width / 2
+                    self.position.x = self.scene.window.width - self.sprite.width / 2
                 if self.sprite.height / 2 < position.y < self.scene.window.height - self.sprite.height / 2 - 72:
-                    self.__position.y = position.y
+                    self.position.y = position.y
                 elif not self.sprite.height / 2 < position.y:
-                    self.__position.y = self.sprite.height / 2
+                    self.position.y = self.sprite.height / 2
                 elif not position.y < self.scene.window.height - self.sprite.height / 2 - 72:
-                    self.__position.y = self.scene.window.height - self.sprite.height / 2 - 72
-                self.sprite.update(x=self.__position.x, y=self.__position.y)
+                    self.position.y = self.scene.window.height - self.sprite.height / 2 - 72
+                self.sprite.update(x=self.position.x, y=self.position.y)
 
     def handle_event(self, event):
         """
@@ -290,7 +290,7 @@ class Player(Collidable):
         :return:
         """
         if not self.pause:
-            self.__position.x = x
-            self.__position.y = y
+            self.position.x = x
+            self.position.y = y
             if not self.dead:
-                self.sprite.update(x=self.__position.x, y=self.__position.y)
+                self.sprite.update(x=self.position.x, y=self.position.y)
