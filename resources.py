@@ -5,7 +5,8 @@ import traceback
 import pyglet as _pyglet
 import sys
 import yaml
-from typing import Dict as _Dict, Dict, List, Union
+from pyglet.image import AbstractImage
+from typing import Dict as _Dict, Dict, List, Union, Optional
 
 import exceptions
 from utils import Directory
@@ -31,6 +32,9 @@ class JsonFile(object):
 
 
 class Resources(object):
+    no_image: Optional[AbstractImage] = None
+    no_image_circle: Optional[AbstractImage] = None
+    no_image_effect: Optional[AbstractImage] = None
     __resources = {}
     loaded = False
     _status = ""
@@ -45,7 +49,7 @@ class Resources(object):
     @status.setter
     def status(self, value):
         self._status = value
-        print(value)
+        print(f"Resources: {value}")
         # self.infoLabel.text = value
         #
         # glClearColor(0, 0, 0, 0)
@@ -251,7 +255,7 @@ class Resources(object):
 
     # noinspection PyUnreachableCode
     @classmethod
-    def get_resource(cls, *resource_recursion):
+    def get_resource(cls, *resource_recursion, show_warning=True):
         try:
             if len(resource_recursion) > 1:
                 return cls._get_resource(cls.__resources[resource_recursion[0]], *resource_recursion[1:])
@@ -260,12 +264,12 @@ class Resources(object):
             else:
                 return cls.__resources
         except KeyError:
-            resource_text = resource_recursion[0]
-            if len(resource_recursion) > 1:
-                for i in resource_recursion[1:]:
-                    resource_text += "::%s" % i
-            a = exceptions.TextureWarning("Resource %s is not found" % resource_text)
-            # a.__traceback__
+            if show_warning:
+                resource_text = resource_recursion[0]
+                if len(resource_recursion) > 1:
+                    for i in resource_recursion[1:]:
+                        resource_text += "::%s" % i
+                a = exceptions.TextureWarning("Resource %s is not found" % resource_text)
             if resource_recursion[0] == "bubbles" or resource_recursion[0] == "player":
                 if len(resource_recursion) == 3:
                     return cls.no_image_circle

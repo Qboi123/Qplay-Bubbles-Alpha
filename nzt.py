@@ -180,8 +180,56 @@ class ZippedFile(object):
 
     def __repr__(self):
         return f"<ZippedFile '{self.path}'>"
+    #
+    # def __gt__(self, other):
+    #     if type(other) == ZippedDirectory:
+    #         other: ZippedDirectory
+    #         return self.fileName > other.dirName
+    #     elif type(other) == ZippedFile:
+    #         other: ZippedFile
+    #         return self.fileName > other.fileName
+    #
+    # def __ge__(self, other):
+    #     if type(other) == ZippedDirectory:
+    #         other: ZippedDirectory
+    #         return self.fileName >= other.dirName
+    #     elif type(other) == ZippedFile:
+    #         other: ZippedFile
+    #         return self.fileName >= other.fileName
 
+    def __lt__(self, other):
+        if type(other) == ZippedDirectory:
+            other: ZippedDirectory
+            return int(os.path.splitext(self.fileName)[0]) < int(os.path.splitext(other.dirName)[0])
+        elif type(other) == ZippedFile:
+            other: ZippedFile
+            return int(os.path.splitext(self.fileName)[0]) < int(os.path.splitext(other.fileName)[0])
+    #
+    # def __le__(self, other):
+    #     if type(other) == ZippedDirectory:
+    #         other: ZippedDirectory
+    #         return self.fileName <= other.dirName
+    #     elif type(other) == ZippedFile:
+    #         other: ZippedFile
+    #         return self.fileName <= other.fileName
+    #
+    # def __eq__(self, other):
+    #     if type(other) == ZippedDirectory:
+    #         other: ZippedDirectory
+    #         return False
+    #     elif type(other) == ZippedFile:
+    #         other: ZippedFile
+    #         return self.fileName == other.fileName
+    #
+    # def __ne__(self, other):
+    #     if type(other) == ZippedDirectory:
+    #         other: ZippedDirectory
+    #         return True
+    #     elif type(other) == ZippedFile:
+    #         other: ZippedFile
+    #         return self.fileName != other.fileName
 
+    
 # noinspection PyProtectedMember
 class ZippedDirectory(object):
     def __init__(self, zip_file: ZipFormatFile, path, pwd=None):
@@ -230,16 +278,65 @@ class ZippedDirectory(object):
     def __repr__(self):
         return f"<ZippedDirectory '{self.path}'>"
 
+    # def __gt__(self, other):
+    #     if type(other) == ZippedDirectory:
+    #         other: ZippedDirectory
+    #         return self.dirName > other.dirName
+    #     elif type(other) == ZippedFile:
+    #         other: ZippedFile
+    #         return self.dirName > other.fileName
+    #
+    # def __ge__(self, other):
+    #     if type(other) == ZippedDirectory:
+    #         other: ZippedDirectory
+    #         return self.dirName >= other.dirName
+    #     elif type(other) == ZippedFile:
+    #         other: ZippedFile
+    #         return self.dirName >= other.fileName
+
+    def __lt__(self, other):
+        if type(other) == ZippedDirectory:
+            other: ZippedDirectory
+            return int(os.path.splitext(self.dirName)[0]) < int(os.path.splitext(other.dirName)[0])
+        elif type(other) == ZippedFile:
+            other: ZippedFile
+            return int(os.path.splitext(self.dirName)[0]) < int(os.path.splitext(other.fileName)[0])
+
+    # def __le__(self, other):
+    #     if type(other) == ZippedDirectory:
+    #         other: ZippedDirectory
+    #         return self.dirName <= other.dirName
+    #     elif type(other) == ZippedFile:
+    #         other: ZippedFile
+    #         return self.dirName <= other.fileName
+    #
+    # def __eq__(self, other):
+    #     if type(other) == ZippedDirectory:
+    #         other: ZippedDirectory
+    #         return self.dirName == other.dirName
+    #     elif type(other) == ZippedFile:
+    #         other: ZippedFile
+    #         return False
+    #
+    # def __ne__(self, other):
+    #     if type(other) == ZippedDirectory:
+    #         other: ZippedDirectory
+    #         return self.dirName != other.dirName
+    #     elif type(other) == ZippedFile:
+    #         other: ZippedFile
+    #         return True
+
 
 class ZipFile(ZippedDirectory):
     def __init__(self, path, mode="r", password=None):
         # print(mode)
+        import os
+        mode = mode.replace("b", "")
+        mode = mode.replace("+", "")
         zip_file = ZipFormatFile(path, mode=mode, password=password)
         if password:
             zip_file.zipfile.setpassword(password)
         super().__init__(zip_file, "", pwd=password)
-
-        import os
 
         self.absPath: str = os.path.abspath(path)
         try:
@@ -390,6 +487,8 @@ class NZTFile(ZipFile):
                         data[os.path.splitext(item.fileName)[0]] = None
             return data
         elif type(data) == list:
+            index.sort()
+            # print("LIST:", index)
             for item in index:
                 if type(item) == ZippedDirectory:
                     if os.path.splitext(item.dirName)[-1] == ".dict":
@@ -406,8 +505,10 @@ class NZTFile(ZipFile):
                         data.append(None)
             return data
         elif type(data) == tuple:
+            index.sort()
+            # print("TUPLE:", index)
             data = []
-            for item in zipped_dir.index():
+            for item in index:
                 if type(item) == ZippedDirectory:
                     if os.path.splitext(item.dirName)[-1] == ".dict":
                         data.append(self._load(item, {}))

@@ -9,7 +9,7 @@ from pyglet.text import Label
 import sprites
 from effects import Effect
 from events import EffectStartedEvent, EffectStoppedEvent, EffectUpdateEvent, DrawEvent, UpdateEvent, PauseEvent, \
-    UnpauseEvent
+    UnpauseEvent, AutoSaveEvent
 from resources import Resources
 
 
@@ -134,6 +134,7 @@ class PauseGUI(object):
             if self.currentY <= self.endY:
                 self.currentY = self.startY
                 self.currentX += 256
+        AutoSaveEvent(1, event.scene)
 
     def on_draw(self, event: DrawEvent):
         for sprite in self.sprites.values():

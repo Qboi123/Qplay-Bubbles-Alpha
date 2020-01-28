@@ -127,6 +127,7 @@ class Player(Collidable):
 
                 # Player is dead
                 self.dead = True
+                event.scene.scene_manager.save.delete_save()
             elif self.dead:
                 # Change colros
                 if self.gameOverTime <= time():

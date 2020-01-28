@@ -1,22 +1,13 @@
-import random
-
-import sys
-
-import io
 import math
 import os
+import random
 # from os import tmpfile
 import tempfile
 
-import PIL
+import pathlib
 import pyglet
-from PIL import Image, ImageDraw, ImageTk, PngImagePlugin, _imaging
-from typing import Tuple, Any
-
-from pyglet.image import Texture
-from pyglet.image.codecs.bmp import BMPImageDecoder
-from pyglet.image.codecs.pil import PILImageDecoder
-from pyglet.image.codecs.png import PNGImageDecoder
+import sys
+from PIL import Image, ImageDraw
 from io import BytesIO
 
 from perlin import SimplexNoise
@@ -45,8 +36,7 @@ FALSE = False
 
 
 import io
-import zipfile
-from typing import Iterable, Union, List, Tuple, Optional, Dict
+from typing import Union, List, Tuple, Optional, Dict
 
 
 def split_path(path: str):
@@ -203,11 +193,13 @@ class File(object):
         self.os.startfile(self.path)
 
     def open(self, mode="w"):
+        file_was_open = self._fileOpen
         if not self._fileOpen:
             self._fd = open(self.path, mode)
             self._fileOpen = True
         else:
-            raise OSError(f"File {self.path} already opened")
+            pass
+        return file_was_open
 
     def close(self):
         self._fd.close()
@@ -267,7 +259,7 @@ class File(object):
             self.close()
 
     def write_at(self, offset: int, data):
-        self.open(mode="r+b")
+        file_was_open = self.open(mode="r+b")
         self._fd.seek(offset)
 
         if type(data) == str:
@@ -278,18 +270,30 @@ class File(object):
         elif type(data) in [int, float, bool]:
             self._fd.write(str(data).encode())
 
-    def read_at(self, offset: int, size: int = 1) -> bytes:
-        self.open(mode="r+b")
+        if not file_was_open:
+            self.close()
+
+    def read_at(self, offset: int, size: int = -1) -> bytes:
+        file_was_open = self.open(mode="r+b")
         self._fd.seek(offset)
 
-        return self._fd.read(size)
+        data = self._fd.read(size)
+        if not file_was_open:
+            self.close()
+
+        return data
 
     def create(self, size=0):
-        self.open("w+")
+        file_was_open = self.open("w+")
 
+        if size == 0:
+            self.close()
+            return
         self._fd.seek(size - 1)
         self._fd.write(chr(0))
-        self.close()
+
+        if not file_was_open:
+            self.close()
 
     def remove(self):
         self.os.remove(self.path)
@@ -313,6 +317,30 @@ class File(object):
 
     def get_size(self):
         return self.os.path.getsize(self.path)
+
+    def get_ctime(self):
+        return self.os.path.getctime(self.path)
+
+    def get_atime(self):
+        return self.os.path.getatime(self.path)
+
+    def get_mtime(self):
+        return self.os.path.getmtime(self.path)
+
+    def get_dev(self):
+        return os.lstat(self.path).st_dev
+
+    def get_uid(self):
+        return os.lstat(self.path).st_uid
+
+    def get_gid(self):
+        return os.lstat(self.path).st_gid
+
+    def get_mode(self):
+        return os.lstat(self.path).st_mode
+
+    def get_owner(self):
+        return pathlib.Path(self.path).owner()
 
 
 class JsonFile(File):
@@ -473,8 +501,6 @@ def pillow2pyglet(im: Image.Image):
     raw_image = BytesIO()  # tostring is deprecated
     if not os.path.exists("assets/temp"):
         os.makedirs("assets/temp")
-
-    from PIL import _imaging
 
     # _imaging.
 

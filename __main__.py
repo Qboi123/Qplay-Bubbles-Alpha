@@ -1,4 +1,4 @@
-VERSION = ("indev", 0, 0, 1)
+VERSION = ("indev", 0, 1, 0)
 
 
 def main(args):

@@ -32,7 +32,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from random import Random
 
-from nbt.nbt import *
 from pyglet.graphics import Batch
 from typing import Dict, Tuple, Union, Type, List, Optional
 
@@ -68,6 +67,8 @@ class SaveManager(object):
 
         # Get the appropriate OS specific save path:
         self.savePath = os.path.join(pyglet.resource.get_settings_path('Qplay Bubbles'), "saves")
+        if not os.path.exists(self.savePath):
+            os.makedirs(self.savePath)
         print(f"Save Path: {self.savePath}")
         self.saveFileOLD = 'Save-{}.dat'
         self.saveFile = 'Save-{}.nzt'
@@ -149,7 +150,7 @@ class SaveManager(object):
                 nzt_file = NZTFile(save_file_path, "r")
                 self.timestamp_print("Loading NZT-data")
                 nzt_data = nzt_file.load()
-                print(nzt_data)
+                # print(nzt_data)
                 nzt_file.close()
             else:
                 with open(save_file_old_path, 'rb') as file:
@@ -241,7 +242,7 @@ class SaveManager(object):
             return True
 
         else:
-            print("NZTData:", nzt_data)
+            # print("NZTData:", nzt_data)
             # Bubbles
             for bubble in nzt_data["Map"]["Bubbles"]:
                 scene.game_objects.append(
@@ -276,6 +277,13 @@ class SaveManager(object):
             # Completed
             self.timestamp_print('Loading completed.')
             return True
+
+    def delete_save(self):
+        save_file = self.saveFile.format(self.save_name)
+        save_file_path = os.path.join(self.savePath, save_file)
+
+        if os.path.exists(save_file_path):
+            os.remove(save_file_path)
 
     def save_save(self, event: AutoSaveEvent):
         # saveFileOLD = self.saveFileOLD.format(self.save_name)
@@ -318,12 +326,12 @@ class SaveManager(object):
             "random": event.scene.random.getstate()
         }
 
-        print(event.scene.random.getstate())
+        # print(event.scene.random.getstate())
 
         save_file = self.saveFile.format(self.save_name)
         save_file_path = os.path.join(self.savePath, save_file)
 
-        nzt_file = NZTFile(save_file_path, "w")
+        nzt_file = NZTFile(save_file_path, "w+")
         nzt_file.data = nzt_data
         nzt_file.save()
 

@@ -288,7 +288,7 @@ class GameScene(Scene):
 
     # noinspection PyUnusedLocal
     def auto_save_update(self, dt):
-        if self.pauseMode:
+        if self.pauseMode or self.player.dead:
             return
         AutoSaveEvent(dt, self)
 
