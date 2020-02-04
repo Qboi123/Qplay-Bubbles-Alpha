@@ -71,7 +71,7 @@ class BaseNoise(object):
         period and permutation table are used (256). The default permutation
         table generates the exact same noise pattern each time.
         
-        An integer period can be specified, to generate a random permutation
+        An integer period can be specified, to generate a rand permutation
         table with period elements. The period determines the (integer)
         interval that the noise repeats, which is useful for creating tiled
         textures.  period should be a power-of-two, though this is not
@@ -82,7 +82,7 @@ class BaseNoise(object):
         A permutation table consisting of an iterable sequence of whole
         numbers can be specified directly. This should have a power-of-two
         length. Typical permutation tables are a sequence of unique integers in
-        the range [0,period) in random order, though other arrangements could
+        the range [0,period) in rand order, though other arrangements could
         prove useful, they will not be "pure" simplex noise. The largest
         element in the sequence must be no larger than period-1.
 

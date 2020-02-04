@@ -1,0 +1,13 @@
+{
+  "type": "bubble/dynamic",
+  "colors": [
+    "#ff0000",
+    "#ff7f00",
+    "#ffff00",
+    "#00ff00",
+    "#00ffff",
+    "#007fff",
+    "#0000ff",
+    "#7f00ff"
+  ]
+}

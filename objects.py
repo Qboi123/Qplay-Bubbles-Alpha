@@ -3,11 +3,12 @@ from pyglet.window import Window
 
 import utils
 from events import CollisionEvent
+from sprites.entity import Entity
 
 
 class Collidable(object):
     def __init__(self, sprite):
-        self.sprite = sprite
+        self.sprite: Entity = sprite
         self.dead = False
 
     def collides_with(self, other_object):

@@ -9,3 +9,4 @@ class EFFECTS(object):
     SlownessEffect = SlownessEffect()
     ConfusionEffect = ConfusionEffect()
     SpeedBoostEffect = SpeedBoostEffect()
+    ProtectionEffect = ProtectionEffect()

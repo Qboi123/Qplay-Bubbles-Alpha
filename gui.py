@@ -116,29 +116,26 @@ class PauseGUI(object):
         self.currentY = self.startY
 
         PauseEvent.bind(self.on_pause)
-        DrawEvent.bind(self.on_draw)
+        # DrawEvent.bind(self.on_draw)
         UnpauseEvent.bind(self.on_unpause)
 
     def on_pause(self, event: PauseEvent):
         bg = resource.image("textures/gui/pauseBG.png")
-        self.sprites["BG"] = Sprite(bg, 0, 0, batch=event.batch)
+        self.sprites["BG"] = Sprite(bg, 0, 0, batch=event.scene.foregroundBatch)
 
         for bubble in sprites.BUBBLES:
-            image = Resources.get_resource("bubbles", bubble.get_unlocalized_name(), 40)
-            self.sprites[bubble.get_unlocalized_name()+".image"] = Sprite(
-                image, self.currentX, self.currentY, batch=event.batch)
-            self.sprites[bubble.get_unlocalized_name()+".label"] = Label(
-                Resources.get_localized_name(f"bubble.{bubble.get_unlocalized_name()}.name"),
-                "Arial", 15, color=(255, 255, 255, 255), x=self.currentX + 30, y=self.currentY - 7.5)
-            self.currentY -= 48
-            if self.currentY <= self.endY:
-                self.currentY = self.startY
-                self.currentX += 256
+            if not bubble.hideInPause:
+                image = Resources.get_resource("bubbles", bubble.get_unlocalized_name(), 40)
+                self.sprites[bubble.get_unlocalized_name()+".image"] = Sprite(
+                    image, self.currentX, self.currentY, batch=event.scene.foregroundBatch)
+                self.sprites[bubble.get_unlocalized_name()+".label"] = Label(
+                    Resources.get_localized_name(f"bubble.{bubble.get_unlocalized_name()}.name"),
+                    "Arial", 15, color=(255, 255, 255, 255), x=self.currentX + 30, y=self.currentY - 7.5, batch=event.scene.foregroundBatch)
+                self.currentY -= 48
+                if self.currentY <= self.endY:
+                    self.currentY = self.startY
+                    self.currentX += 256
         AutoSaveEvent(1, event.scene)
-
-    def on_draw(self, event: DrawEvent):
-        for sprite in self.sprites.values():
-            sprite.draw()
 
     def on_unpause(self, event: UnpauseEvent):
         for key, value in self.sprites.copy().items():

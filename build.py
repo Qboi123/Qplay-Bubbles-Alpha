@@ -9,8 +9,7 @@ if __name__ == '__main__':
     # Compiler class
     compiler = Compiler(
         exclude=[".idea", ".gitattributes", ".gitignore", "build_config.json", "dll", "build.py", "README.md",
-                 "venv", "output", "obj", "icon.png", ".git", "assets/temp", "assets/sfx/GitHubDesktopSetup.exe",
-                 "assets/sfx/pyglet-master.zip", "assets/sfx/source-archive.zip", "compiler.py", "dll", "logs"],
+                 "venv", "output", "obj", "icon.png", ".git", "assets/temp", "compiler.py", "dll", "logs"],
         icon="icon.ico", main_folder=os.getcwd(), main_file="__main__.py",
         hidden_imports=["pyglet", "PIL", "sys", "os", "pyglet_gui", "pyglet.gl", "pyglet.graphics", "pyglet.window",
                         "pyglet.image", "pyglet.resource", "collections", "typing", "tempfile", "io", "win32ctypes",

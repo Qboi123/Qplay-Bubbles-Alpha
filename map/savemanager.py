@@ -30,29 +30,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
+import pickle
 from random import Random
-
-from pyglet.graphics import Batch
-from typing import Dict, Tuple, Union, Type, List, Optional
+from typing import Dict, Tuple, Union, List, Optional
+from typinglib import Integer, Float
 
 import pyglet
-import pickle
-import json
-import os
 
 import globals as g
-
-from time import gmtime, strftime
-
 # from block import Block
-from bubble import BubbleObject
-from effects import Effect
 from events import AutoSaveEvent
 from nzt import NZTFile
-from sprites.player import Player
-from map import Map
 from utils.classes import Position2D
-from utils.nbt_file import get_nbt
 
 
 class SaveManager(object):
@@ -90,6 +80,7 @@ class SaveManager(object):
         save_file = self.saveFileOLD.format(self.save_name)
         return os.path.exists(os.path.join(self.savePath, save_file))
 
+    # noinspection PyUnresolvedReferences
     def load_save(self, scene):
         # Initialize loading save
         save_file_old = self.saveFileOLD.format(self.save_name)
@@ -196,8 +187,29 @@ class SaveManager(object):
                         } for id_, size, speed, pos in loaded_save["bubbles"])
                     ]
                 },
-                "random": loaded_save["random"]
+                "random": loaded_save["random"],
+                "version": "0.2.0"
             }
+
+            if "version" in nzt_data.keys():
+                if nzt_data["version"] == "0.1.0":
+                    for bubble in nzt_data["Map"]["Bubbles"]:
+                        bubble["Multipliers"] = {"attack": g.NAME2BUBBLE[bubble["id"]].attackMultiplier,
+                                                 "defence": g.NAME2BUBBLE[bubble["id"]].defenceMultiplier}
+                        bubble["health"] = g.NAME2BUBBLE[bubble["id"]].health
+                        bubble["maxHealth"] = g.NAME2BUBBLE[bubble["id"]].maxHealth
+                    nzt_data["Player"]["health"] = 50 * loaded_save["player"][0][0] / 10 if \
+                        loaded_save["player"][0][0] <= 10 else 50
+                    nzt_data["Player"]["maxHealth"] = 50
+            else:
+                for bubble in nzt_data["Map"]["Bubbles"]:
+                    bubble["Multipliers"] = {"attack": g.NAME2BUBBLE[bubble["id"]].attackMultiplier,
+                                             "defence": g.NAME2BUBBLE[bubble["id"]].defenceMultiplier}
+                    bubble["health"] = g.NAME2BUBBLE[bubble["id"]].health
+                    bubble["maxHealth"] = g.NAME2BUBBLE[bubble["id"]].maxHealth
+                nzt_data["Player"]["health"] = 50 * loaded_save["player"][0][0] / 10 if \
+                    loaded_save["player"][0][0] <= 10 else 50
+                nzt_data["Player"]["maxHealth"] = 50
 
             save_file2 = 'Save-{}.nzt'.format(self.save_name)
             save_file_path2 = os.path.join(self.savePath, save_file2)
@@ -213,7 +225,7 @@ class SaveManager(object):
                                             scene))
 
             # Player
-            lives = loaded_save["player"][0][0]
+            health = loaded_save["player"][0][0]
             score = loaded_save["player"][0][1]
 
             pos = loaded_save["player"][0][2]
@@ -224,7 +236,7 @@ class SaveManager(object):
             scene.player._Player__position = pos
             scene.player.rotation = rot
             scene.player.score = score
-            scene.player.lives = lives
+            scene.player.health = Integer(health)
             scene.player.ghostMode = ghost_mode
 
             scene.player.refresh()
@@ -235,7 +247,7 @@ class SaveManager(object):
                 scene.player.add_effect(g.NAME2EFFECT[effect](time, strength, scene))
 
             # Random
-            scene.random.setstate(loaded_save["random"])
+            scene.random.setstate(loaded_save["rand"])
 
             # Completed
             self.timestamp_print('Loading completed.')
@@ -244,13 +256,35 @@ class SaveManager(object):
         else:
             # print("NZTData:", nzt_data)
             # Bubbles
+
+            if "version" in nzt_data.keys():
+                if nzt_data["version"] == "0.1.0":
+                    for bubble in nzt_data["Map"]["Bubbles"]:
+                        bubble["Multipliers"] = {"attack": g.NAME2BUBBLE[bubble["id"]].attackMultiplier,
+                                                 "defence": g.NAME2BUBBLE[bubble["id"]].defenceMultiplier}
+                        bubble["health"] = g.NAME2BUBBLE[bubble["id"]].health
+                        bubble["maxHealth"] = g.NAME2BUBBLE[bubble["id"]].maxHealth
+                    nzt_data["Player"]["health"] = 50 * nzt_data["Player"]["lives"] / 10 if \
+                        nzt_data["Player"]["lives"] <= 10 else 50
+                    nzt_data["Player"]["maxHealth"] = 50
+            else:
+                for bubble in nzt_data["Map"]["Bubbles"]:
+                    bubble["Multipliers"] = {"attack": g.NAME2BUBBLE[bubble["id"]].attackMultiplier,
+                                             "defence": g.NAME2BUBBLE[bubble["id"]].defenceMultiplier}
+                    bubble["health"] = g.NAME2BUBBLE[bubble["id"]].health
+                    bubble["maxHealth"] = g.NAME2BUBBLE[bubble["id"]].maxHealth
+                nzt_data["Player"]["health"] = 50 * nzt_data["Player"]["lives"] / 10 if \
+                    nzt_data["Player"]["lives"] <= 10 else 50.0
+                nzt_data["Player"]["maxHealth"] = 50.0
+            nzt_data["version"] = "0.2.0"
+
             for bubble in nzt_data["Map"]["Bubbles"]:
                 scene.game_objects.append(
                     scene.map.create_bubble(bubble["pos"][0], bubble["pos"][1], g.NAME2BUBBLE[bubble["id"]], scene.batch, bubble["size"], bubble["speed"],
                                             scene))
 
             # Player
-            lives = nzt_data["Player"]["lives"]
+            health = nzt_data["Player"]["health"]
             score = nzt_data["Player"]["score"]
 
             pos = Position2D(nzt_data["Player"]["pos"])
@@ -261,7 +295,7 @@ class SaveManager(object):
             scene.player._Player__position = pos
             scene.player.rotation = rot
             scene.player.score = score
-            scene.player.lives = lives
+            scene.player.health = Float(health)
             scene.player.ghostMode = ghost_mode
 
             scene.player.refresh()
@@ -308,7 +342,8 @@ class SaveManager(object):
                     event.player.position.y
                 ],
                 "score": event.player.score,
-                "lives": event.player.lives
+                "health": Float(event.player.get_max_health()),
+                "maxHealth": Float(event.player.get_max_health())
             },
             "Map": {
                 "Bubbles": [
@@ -319,14 +354,19 @@ class SaveManager(object):
                         "pos": [
                             bubbleobject.position.x,
                             bubbleobject.position.y
-                        ]
+                        ],
+                        "Multiplier": {
+                            "attack": bubbleobject.attackMultiplier,
+                            "defence": bubbleobject.defenceMultiplier
+                        }
                     } for bubbleobject in event.map.bubbles)
                 ]
             },
-            "random": event.scene.random.getstate()
+            "random": event.scene.random.getstate(),
+            "version": "0.2.0"
         }
 
-        # print(event.scene.random.getstate())
+        # print(event.scene.rand.getstate())
 
         save_file = self.saveFile.format(self.save_name)
         save_file_path = os.path.join(self.savePath, save_file)
@@ -352,7 +392,7 @@ class SaveManager(object):
         #                               bubbleobject.speed,
         #                               bubbleobject.position
         #                               ) for bubbleobject in event.map.bubbles],
-        #                  "random": event.scene.random.getstate(),
+        #                  "rand": event.scene.rand.getstate(),
         #                  "effects": [(appliedeffect.baseEffectClass.get_unlocalized_name(),
         #                               appliedeffect._get_time_remaining(),
         #                               appliedeffect.strengthMultiply

@@ -2,6 +2,7 @@ import resources
 
 
 class Init(object):
+    allBubbles = []
     def __init__(self):
         pass
 
@@ -11,8 +12,18 @@ class Init(object):
         res.reindex()
         res.load()
 
-    def init(self):
-        pass
+        import sprites.bubbles
 
-    def post_init(self):
+        Init.allBubbles = sprites.BUBBLES
+
+    @staticmethod
+    def init():
+        import bubble as b
+
+        for bubble in Init.allBubbles:
+            bubble: b.Bubble
+            bubble.check_unlocalized_name()
+
+    @staticmethod
+    def post_init():
         pass

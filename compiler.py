@@ -105,8 +105,8 @@ class Compiler(object):
         self.remoteDesktop = uac_uiaccess
 
         # Windows Side-by-side Assembly searching options
-        self.privateAssemblies = win_private_assemblies
-        self.noPreferRedirects = win_no_prefer_redirects
+        self.winPrivateAssemblies = win_private_assemblies
+        self.winNoPreferRedirects = win_no_prefer_redirects
 
         # Mac OS X specifiec options
         self.osxBundleIndentifier = osx_bundle_indentifier
@@ -331,9 +331,9 @@ class Compiler(object):
             args.append("--uac-admin")
         if self.remoteDesktop:
             args.append("--uac-uiaccess")
-        if self.privateAssemblies:
+        if self.winPrivateAssemblies:
             args.append("--win-private-assemblies")
-        if self.noPreferRedirects:
+        if self.winNoPreferRedirects:
             args.append("--win-no-prefer-redirects")
         if self.osxBundleIndentifier:
             args.append("--osx-bundle-identifier \"%s\"" % self.osxBundleIndentifier)

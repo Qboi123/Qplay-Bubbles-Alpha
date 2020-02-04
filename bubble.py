@@ -1,8 +1,6 @@
 import random
 
-from pyglet.graphics import Batch
 from pyglet.sprite import Sprite
-from pyglet.window import Window
 
 import globals as g
 import utils
@@ -11,15 +9,35 @@ from events import CollisionEvent, DrawEvent, UpdateEvent, TickUpdateEvent, Bubb
 from exceptions import UnlocalizedNameError
 from objects import Collidable
 from resources import Resources
+from sprites.entity import Entity
 from sprites.player import Player
+from typinglib import Boolean, Float, String, Integer, Union
 from utils.classes import Position2D
 
 
 class Bubble(object):
     def __init__(self):
-        self.speedMin: float = 1
-        self.speedMax: float = 1
-        self.scoreMultiplier: float = 0
+        self.speedMin: Float = 1
+        self.speedMax: Float = 1
+
+        self.health: Float = 0.5
+        self.maxHealth: Float = 1.0
+        self.scoreMultiplier: Float = 0.0
+        self.attackMultiplier: Float = 0.0
+        self.defenceMultiplier: Float = 1.0
+
+        self.hideInPause: Boolean = False
+
+    def check_unlocalized_name(self):
+        if hasattr(g, "BUBBLE2NAME"):
+            if self in g.BUBBLE2NAME.keys():
+                return g.BUBBLE2NAME[self]
+            else:
+                raise UnlocalizedNameError(
+                    f"There is no unlocalized name for object "
+                    f"'{self.__name__ if isinstance(self, type) else self.__class__.__name__}'")
+        else:
+            raise UnlocalizedNameError("There are no unlocalized names defined!")
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
         pass  # return BubbleObject(self, x, y, batch, size, speed)
@@ -29,8 +47,8 @@ class Bubble(object):
             g.NAME2BUBBLE = dict()
         if not hasattr(g, "BUBBLE2NAME"):
             g.BUBBLE2NAME = dict()
-        g.NAME2BUBBLE[name] = self
-        g.BUBBLE2NAME[self] = name
+        g.NAME2BUBBLE[name]: Bubble = self
+        g.BUBBLE2NAME[self]: String = name
 
     def get_unlocalized_name(self):
         if hasattr(g, "BUBBLE2NAME"):
@@ -51,44 +69,61 @@ class Bubble(object):
 
 # noinspection PyUnusedLocal
 class BubbleObject(Collidable):
-    def __init__(self, base_class, x, y, batch, size, speed):
-        parent: BubbleObject
+    # noinspection SpellCheckingInspection
+    def __init__(self, base_class, x, y, batch, size, speed,
+                 attac_mp: Float = None, defen_mp: Float = None, regen_mp: Float = None, score_mp: Integer = 0):
+        base_class: Bubble
 
-        self.scoreMultiplier = 0
+        # Bubble resource
+        bub_resource = Resources.get_resource("bubbles", base_class.get_unlocalized_name())
 
-        self.baseBubbleClass: Bubble = base_class
-        self.name = self.baseBubbleClass.get_unlocalized_name()
-
-        bub_resource = Resources.get_resource("bubbles", self.name)
-
+        # Calculate speed
         if speed is not None:
             pass
         else:
-            slowest = self.baseBubbleClass.speedMin
-            speed = slowest
+            slowest: Union[Integer, Float] = self.baseBubbleClass.speedMin
+            speed: Float = float(slowest)
 
+        # Calculate size
         if size:
             pass
         else:
-            smallest = min(list(bub_resource.keys()))
-            size = smallest
-        image = Resources.get_resource("bubbles", self.name, size)
+            smallest: Integer = min(list(bub_resource.keys()))
+            size: Integer = smallest
 
-        # if self.name == "ultra_bubble":
-        #     print(f"Size: {size}")
+        # Get image from resource
+        image = Resources.get_resource("bubbles", base_class.get_unlocalized_name(), size)
 
         # Properties
-        self.speed = speed
-        self.size = size
+        self.health: Float = base_class.health
+        self.maxHealth: Float = base_class.maxHealth
+        self.speed: Float = speed
+        self.size: Integer = size
 
+        # Multipliers
+        self.regenMultiplier: Float = 0.0
+        self.scoreMultiplier: Integer = base_class.scoreMultiplier if score_mp is None else Integer(score_mp)
+        self.attackMultiplier: Float = base_class.attackMultiplier if attac_mp is None else Float(attac_mp)
+        self.defenceMultiplier: Float = base_class.defenceMultiplier if defen_mp is None else Float(defen_mp)
+
+        # Baseclass object and name
+        self.baseBubbleClass: Bubble = base_class
+        self.name: String = self.baseBubbleClass.get_unlocalized_name()
+
+        # States
         self.position: Position2D = Position2D((x, y))
-        self.pause = False
+        self.pause: Boolean = False
 
-        sprite: Sprite = Sprite(img=image, x=x, y=y, batch=batch)
+        # Sprite
+        sprite: Entity = Entity(defence_mp=self.defenceMultiplier, attack_mp=self.attackMultiplier,
+                                regen_mp=self.regenMultiplier, health=self.health, max_health=self.maxHealth,
+                                image=image, x=x, y=y, batch=batch)
         super(BubbleObject, self).__init__(sprite)
 
+        # (Bubble) Image
         self.image = image
 
+        # Event bindings
         DrawEvent.bind(self.draw)
         UpdateEvent.bind(self.update)
         CollisionEvent.bind(self.on_collision)
@@ -96,9 +131,7 @@ class BubbleObject(Collidable):
         UnpauseEvent.bind(self.on_unpause)
 
     def draw(self, event):
-        pass
-        # self.sprite.update(self.sprite.x, self.sprite.y, self.sprite.rotation, self.sprite.scale,
-        #                    self.sprite.scale_x, self.sprite.scale_y)
+        self.sprite.draw()
 
     def on_unpause(self, event: PauseEvent):
         self.pause = False
@@ -108,6 +141,12 @@ class BubbleObject(Collidable):
 
     def update(self, event: UpdateEvent):
         if not self.pause:
+            if self.baseBubbleClass.get_unlocalized_name() == "kill_bubble":
+                pass
+                # print(self.sprite.dead)
+                # print(self.sprite.health)
+            if self.sprite.dead:
+                self.dead = True
             if not self.dead:
                 dx = -self.speed
                 dy = 0
@@ -124,16 +163,15 @@ class BubbleObject(Collidable):
             BubbleUpdateEvent(event.dt, self, event.scene)
 
     def on_collision(self, event: CollisionEvent):
-        if (not self.dead) and (not event.player.ghostMode):
+        if not self.dead:
             if type(event.otherObject) == Player:
-                obj: Player = event.otherObject
-                obj.addscore(((self.size / 2) + (self.speed / utils.TICKS_PER_SEC / 7))
-                              * self.baseBubbleClass.scoreMultiplier)
+                if not event.otherObject.ghostMode:
+                    obj: Player = event.otherObject
+                    obj.addscore(((self.size / 2) + (self.speed / utils.TICKS_PER_SEC / 7))
+                                  * self.baseBubbleClass.scoreMultiplier)
 
-                if hasattr(self.baseBubbleClass, "on_collision"):
-                    self.baseBubbleClass.on_collision(event)
-
-                self.dead = True
+                    if hasattr(self.baseBubbleClass, "on_collision"):
+                        self.baseBubbleClass.on_collision(event)
 
     def on_tick_update(self, event: TickUpdateEvent):
         if not self.dead:
@@ -157,8 +195,8 @@ class BubblePriorityCalculator(object):
         cls.bubbles[bubble] = (cls.totalPriority - priority, cls.totalPriority)
 
     @classmethod
-    def get(cls, random=random):
-        rand = random.randint(0, cls.totalPriority)
+    def get(cls, rand=random):
+        rand = rand.randint(0, cls.totalPriority)
 
         for bubble, priority in cls.bubbles.items():
             priority_min, priority_max = priority

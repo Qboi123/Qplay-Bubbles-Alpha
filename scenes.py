@@ -8,12 +8,14 @@ from pyglet.media import Player as MediaPlayer
 from pyglet.text import Label
 from pyglet.window import key
 
+from bubble import BubbleObject
 from events import CollisionEvent, UpdateEvent, DrawEvent, TickUpdateEvent, PlayerCollisionEvent, AutoSaveEvent, \
     PauseEvent, UnpauseEvent
 from gui import EffectGUI, GameGUI, PauseGUI
 from map import Map
 from objects import Collidable
 from resources import Resources
+from sprites.entity import Entity
 from sprites.player import Player
 from utils import ROTATION_SPEED, MOTION_SPEED
 
@@ -92,14 +94,19 @@ class GameScene(Scene):
 
         self.pauseMode = False
         self.window: pyglet.window.Window = window
+        self.backgroundBatch: pyglet.graphics.Batch = pyglet.graphics.Batch()
         self.batch: pyglet.graphics.Batch = pyglet.graphics.Batch()
+        self.playerBatch: pyglet.graphics.Batch = pyglet.graphics.Batch()
+        self.foregroundBatch: pyglet.graphics.Batch = pyglet.graphics.Batch()
 
         self.player: Optional[Player] = None
         self.game_objects: List[Union[Any, Collidable]] = list()
         self.map: Optional[Map] = None
         self.fps: Optional[Label] = None
 
+        self.gameGUI: Optional[GameGUI] = None
         self.effectGUI: Optional[EffectGUI] = None
+        self.pauseGUI: Optional[PauseGUI] = None
 
         self.random = Random(4096)
 
@@ -147,8 +154,11 @@ class GameScene(Scene):
             glClearColor(0.1, 0.5, 0.55, 1)
             # glClearColor(0.25, 0.25, 0.25, 1)
             self.window.clear()
-            self.batch.draw()
+            self.backgroundBatch.draw()
             DrawEvent(self)
+            self.batch.draw()
+            self.playerBatch.draw()
+            self.foregroundBatch.draw()
             self.fps.draw()
         except Exception as e:
             tb = e.__traceback__
@@ -160,6 +170,7 @@ class GameScene(Scene):
             print("Line %s | File %s - %s: %s" % (
                 tb.tb_lineno, tb.tb_frame.f_code.co_filename, str(e.__class__.__name__), str(e.args[0])))
 
+    # noinspection PyUnusedLocal
     def safe_change_key(self, old, new, rot_strafe, mot_strafe):
         self.on_key_release(old, [])
         self.on_key_press(new, [])
@@ -263,13 +274,19 @@ class GameScene(Scene):
                 obj_2 = self.game_objects[j]
 
                 # Make sure the objects haven't already been killed
-                if not obj_1.dead and not obj_2.dead:
+                if (not obj_1.dead) and (not obj_2.dead):
                     if obj_1.collides_with(obj_2):
                         CollisionEvent(obj_1, obj_2, self)
                         if isinstance(obj_1, Player):
                             PlayerCollisionEvent(obj_1, obj_2, self)
                         CollisionEvent(obj_2, obj_1, self)
                         self.fps_text = "FPS: %s" % round(1 / dt, 1)
+                        if hasattr(obj_1, "sprite") and hasattr(obj_2, "sprite"):
+                            if isinstance(obj_1.sprite, Entity) and isinstance(obj_2.sprite, Entity):
+                                if isinstance(obj_1, BubbleObject) and isinstance(obj_2, BubbleObject):
+                                    continue
+                                obj_2.sprite.damage(obj_1.sprite.attackMultiplier)
+                                obj_1.sprite.damage(obj_2.sprite.attackMultiplier)
 
         if self.player_rot_strafe:
             self.player.rotate(dt, self.player_rot_strafe)

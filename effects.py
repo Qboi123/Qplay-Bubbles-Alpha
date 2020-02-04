@@ -1,46 +1,50 @@
 import random
 from copy import copy
 from time import time
-from typing import Optional
+from typing import Optional, Callable, List, Type
 
 from pyglet import resource
-from pyglet.window import key
 
 import globals as g
 from events import EffectUpdateEvent, UpdateEvent, TickUpdateEvent, EffectStoppedEvent, EffectStartedEvent, \
     PlayerCollisionEvent, EffectTickUpdateEvent, ScoreEvent, PauseEvent, UnpauseEvent
 from exceptions import UnlocalizedNameError
-
-
 # noinspection PyPep8Naming
 from resources import Resources
+from typinglib import Boolean, Object, Float
 from utils import ROTATION_SPEED, MOTION_SPEED
 
 
 # noinspection PyPep8Naming,PyUnusedLocal
 class AppliedEffect(object):
     def __init__(self, base_class, time_length, scene, strength_multiply=1, dead=False):
-        activeTypes = [type(i) for i in scene.player.activeEffects]
+        activeTypes: List[Type[Effect]] = [type(i.baseEffectClass) for i in scene.player.activeEffects]
+
+        if base_class.isBadEffect:
+            if ProtectionEffect not in base_class.incompatibles:
+                base_class.incompatibles.append(ProtectionEffect)
 
         for incompatible in base_class.incompatibles:
             if incompatible in activeTypes:
                 self.dead = True
                 return
 
-        self.dead = dead
+        self.dead: Boolean = dead
 
         if dead:
             return
 
-        self.time = time()
+        self._scene: Object = scene
 
-        self.stopTime = time() + time_length
+        self.time: Float = time()
+
+        self.stopTime: Float = time() + time_length
         self.strengthMultiply = strength_multiply
 
         self.baseEffectClass: Effect = base_class
 
-        self.pauseTime: Optional[float] = None
-        self.pause = False
+        self.pauseTime: Optional[Float] = None
+        self.pause: Boolean = False
 
         try:
             self.icon = Resources.get_effect_resource(self.baseEffectClass.get_unlocalized_name())
@@ -59,6 +63,13 @@ class AppliedEffect(object):
 
         self.baseEffectClass.on_effect_started(self, scene)
         EffectStartedEvent(self, scene)
+
+    def stop(self):
+        self.timeRemaining = 0
+        if not self.dead:
+            self.baseEffectClass.on_effect_stopped(self, self._scene)
+            EffectStoppedEvent(self, self._scene)
+        self.dead = True
 
     def __repr__(self):
         return f'[{self.__class__.__name__}: {round(self.timeRemaining, 1)}]'
@@ -85,7 +96,7 @@ class AppliedEffect(object):
         if self.timeRemaining <= 0:
             self.timeRemaining = 0
             if not self.dead:
-                self.baseEffectClass.on_effect_stopped(self, event)
+                self.baseEffectClass.on_effect_stopped(self, event.scene)
                 EffectStoppedEvent(self, event.scene)
             self.dead = True
         if self.dead:
@@ -114,10 +125,11 @@ class AppliedEffect(object):
 # noinspection PyMethodMayBeStatic
 class Effect(object):
     def __init__(self, call_when=lambda time_, strength, scene: True):
-        self._call_when = call_when
+        self.isBadEffect: Boolean = False
+        self._call_when: Callable = call_when
         self.icon = resource.image("textures/effect/effect_none.png")
         # self.icon = Resources.get_effect_resource()
-        self.incompatibles = []
+        self.incompatibles: List = []
     
     def __call__(self, time_length, strength_multiply, scene):
         if self._call_when(time_length, strength_multiply, scene):
@@ -156,15 +168,23 @@ class Effect(object):
     def on_effect_stopped(self, appliedeffect: AppliedEffect, scene):
         pass
 
-    def on_player_collision(self, event: PlayerCollisionEvent):
-        print(f"Collision with "
-              f"{event.otherObject.__class__.__name__ if type(event.otherObject) is not type else event.otherObject.__name__}")
+    # noinspection PyUnusedLocal
+    def on_player_collision(self, appliedeffect: AppliedEffect, event: PlayerCollisionEvent):
+        print(
+            f"Collision with "
+            f"{event.otherObject.__class__.__name__ if type(event.otherObject) is not type else event.otherObject.__name__}"
+        )
         # pass  # self.baseEffectClass.on_player_collision(window, batch, player, obj)
+
+    def is_bad_effect(self):
+        return self.isBadEffect
 
 
 class TeleportingEffect(Effect):
     def __init__(self):
         super(TeleportingEffect, self).__init__()
+
+        self.isBadEffect = True
 
         self.incompatibles = [TeleportingEffect, ParalyseEffect]
         self.set_unlocalized_name("teleporting")
@@ -182,6 +202,8 @@ class TeleportingEffect(Effect):
 class SpeedBoostEffect(Effect):
     def __init__(self):
         super(SpeedBoostEffect, self).__init__(lambda time_, strength, scene: scene.player.motionSpeedMultiply < 2)
+
+        self.isBadEffect = False
 
         self.incompatibles = [SlownessEffect, ParalyseEffect]
         self.set_unlocalized_name("speed_boost")
@@ -205,6 +227,8 @@ class SlownessEffect(Effect):
     def __init__(self):
         super(SlownessEffect, self).__init__(lambda time_, strength_multiply, scene:
                                              (scene.player.motionSpeedMultiply - (0.5 * strength_multiply) >= 0))
+
+        self.isBadEffect = True
 
         self.incompatibles = [SpeedBoostEffect, ParalyseEffect]
         self.icon = resource.image("textures/effect/slowness.png")
@@ -230,6 +254,8 @@ class ParalyseEffect(Effect):
         super(ParalyseEffect, self).__init__(lambda time_, strength_multiply, scene:
                                              (scene.player.motionSpeedMultiply - (0.5 * strength_multiply) >= 0))
 
+        self.isBadEffect = True
+
         self.incompatibles = [SpeedBoostEffect, SlownessEffect, ParalyseEffect, TeleportingEffect]
         self.icon = resource.image("textures/effect/paralyse.png")
         self.set_unlocalized_name("paralyse")
@@ -254,9 +280,12 @@ class ScoreStatusEffect(Effect):
     def __init__(self):
         super(ScoreStatusEffect, self).__init__()
 
+        self.isBadEffect = False
+
         self.incompatibles = [ScoreStatusEffect]
         self.icon = resource.image("textures/effect/score_status.png")
         self.set_unlocalized_name("score_status")
+
         self.bindings = dict()
 
     def on_effect_started(self, appliedeffect: AppliedEffect, scene):
@@ -274,6 +303,8 @@ class GhostEffect(Effect):
     def __init__(self):
         super(GhostEffect, self).__init__()
 
+        self.isBadEffect = False
+
         self.incompatibles = [GhostEffect]
         self.icon = resource.image("textures/effect/ghost_mode.png")
         self.set_unlocalized_name("ghost_mode")
@@ -285,10 +316,33 @@ class GhostEffect(Effect):
         scene.player.ghostMode = False
 
 
+class ProtectionEffect(Effect):
+    def __init__(self):
+        super(ProtectionEffect, self).__init__()
+
+        self.isBadEffect = False
+
+        self.incompatibles = [ProtectionEffect]
+        self.set_unlocalized_name("protection")
+
+    def on_effect_started(self, appliedeffect: AppliedEffect, scene):
+        for effect in scene.player.activeEffects:
+            effect: AppliedEffect
+            if effect.baseEffectClass.is_bad_effect():
+                effect.stop()
+        scene.player.damageHook = lambda atk: None
+
+    def on_effect_stopped(self, appliedeffect: AppliedEffect, scene):
+        scene.player.damageHook = None
+
+
+# noinspection PyPep8Naming,PyUnusedLocal,PyShadowingNames,PyAttributeOutsideInit
 class ConfusionEffect(Effect):
     def __init__(self):
         super(ConfusionEffect, self).__init__()
         self.incompatibles = [ConfusionEffect]
+
+        self.isBadEffect = True
 
         self.set_unlocalized_name("confusion")
         self.old: Optional[list] = None

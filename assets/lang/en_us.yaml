@@ -1,14 +1,15 @@
 bubble.normal_bubble.name: Normal Bubble
 bubble.speedy_bubble.name: Speedy Bubble
-bubble.double_bubble.name: Double Bubble
-bubble.triple_bubble.name: Triple Bubble
-bubble.kill_bubble.name: Deadly Bubble
-bubble.teleporter_bubble.name: Teleportation Bubble
+bubble.double_bubble.name: Bubble of Double Value
+bubble.triple_bubble.name: Bubble of Triple Value
+bubble.kill_bubble.name: Bubble of Death
+bubble.teleporter_bubble.name: Bubble of Teleportation
 bubble.ultra_bubble.name: Ultra Bubble
-bubble.ghost_bubble.name: Ghost Bubble
-bubble.slowness_bubble.name: Slowness Bubble
-bubble.speedboost_bubble.name: Speedboots Bubble
-bubble.life_bubble.name: Life Bubble
-bubble.double_state_bubble.name: Double State Bubble
-bubble.triple_state_bubble.name: Triple State Bubble
-bubble.paralyse_bubble.name: Paralyse Bubble
+bubble.ghost_bubble.name: Bubble of Ghosting
+bubble.slowness_bubble.name: Bubble of Slowness
+bubble.speedboost_bubble.name: Bubble of Speed
+bubble.life_bubble.name: Bubble of Life
+bubble.double_state_bubble.name: Bubble of Score (2x)
+bubble.triple_state_bubble.name: Bubble of Score (3x)
+bubble.paralyse_bubble.name: Bubble of Paralysation
+bubble.protection_bubble.name: Bubble of Resistance

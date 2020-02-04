@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from bubble import BubbleObject, BubblePriorityCalculator
 from events import TickUpdateEvent, UpdateEvent, DrawEvent, BubbleRemoveEvent, BubbleCreateEvent
+from typinglib import Float
 from utils import MIN_BUBBLE_SIZE, MAX_BUBBLE_SIZE, MAXIMAL_BUBBLES
 
 
@@ -25,7 +26,7 @@ class Map(object):
         if self.bubbleCreationHook:
             return self.bubbleCreationHook(x, batch, objects, scene, random)
 
-        # size_rand = random.random(self.tick_updates, 1)
+        # size_rand = rand.rand(self.tick_updates, 1)
         size_randint = random.randint(MIN_BUBBLE_SIZE, MAX_BUBBLE_SIZE)  # size_rand * 50 + 10
         y_randint = random.randint(int(size_randint / 2), scene.window.height - 72 - int(size_randint / 2))
 
@@ -46,8 +47,12 @@ class Map(object):
 
         self.bubbles.remove(obj)
 
-    def create_bubble(self, x, y, bubble, batch, size, speed, scene):
+    def create_bubble(self, x, y, bubble, batch, size, speed, scene, attack_mp: Float = None, defence_mp: Float = None):
         bub = bubble(x, y, self, batch, size, speed)
+        if attack_mp is not None:
+            bub.attackMultiplier = attack_mp
+        if defence_mp is not None:
+            bub.defenceMultiplier = defence_mp
         BubbleCreateEvent(bub, scene)
 
         self.bubbles.append(bub)
@@ -55,7 +60,7 @@ class Map(object):
 
     def init_bubbles(self, scene):
         for _ in range(MAXIMAL_BUBBLES):
-            # size_rand = random.random(self.tick_updates, 1)
+            # size_rand = rand.rand(self.tick_updates, 1)
             bubble = BubblePriorityCalculator.get(scene.random)
 
             speed_randint = scene.random.randint(bubble.speedMin, bubble.speedMax)
@@ -73,7 +78,7 @@ class Map(object):
         for bubble in self.bubbles:
             if bubble.position.x < (0 - bubble.size / 2):
                 self.remove_bubble(bubble, event.gameObjects, event.scene)
-            elif bubble.dead:
+            elif bubble.sprite.dead:
                 self.remove_bubble(bubble, event.gameObjects, event.scene)
         if len(self.bubbles) < MAX_BUBBLE_SIZE:
             self.create_random_bubble(event.window.width, event.batch, event.gameObjects, event.scene, event.scene.random)

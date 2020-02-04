@@ -1,7 +1,10 @@
-VERSION = ("indev", 0, 1, 0)
+from typinglib import Boolean, String, Float, Tuple
+
+VERSION: Tuple = ("indev", 0, 1, 0)
 
 
 def main(args):
+    init.init()
     window = pyglet.window.Window(1200, 700, "Qplay Bubbles %s" % version2name(VERSION))
     scene_manager = SceneManager(window, init)
     init.post_init()
@@ -18,8 +21,8 @@ if __name__ == '__main__':
     from log import Log
     import sys
 
-    startup = time.time()
-    startup2 = time.ctime(startup).replace(" ", "-").replace(":", ".")
+    startup: Float = time.time()
+    startup2: String = time.ctime(startup).replace(" ", "-").replace(":", ".")
 
     # if not os.path.exists("../../logs"):
     #     os.makedirs("../../logs")
@@ -28,11 +31,11 @@ if __name__ == '__main__':
     #     os.makedirs("../../logs")
 
     if "--debug" in sys.argv:
-        write_std = True
+        write_std: Boolean = True
     else:
-        write_std = False
+        write_std: Boolean = False
 
-    log_file = time.strftime(f"%d-%m-%Y %H_%M_%S.log", time.gmtime(startup))
+    log_file: String = time.strftime(f"%d-%m-%Y %H_%M_%S.log", time.gmtime(startup))
 
     stderr = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stderr__, "ERROR", write_std)
     stdwrn = Log(os.getcwd().replace("\\", "/") + "/logs/" + log_file, sys.__stderr__, "WARN", write_std)
@@ -50,7 +53,7 @@ if __name__ == '__main__':
 
     from init import Init
 
-    init = Init()
+    init: Init = Init()
     init.pre_init()
 
     import graphics

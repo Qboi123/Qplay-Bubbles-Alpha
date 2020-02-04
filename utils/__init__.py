@@ -533,7 +533,7 @@ class FastRandom(object):
         return (self.seed >> 16) & 0x7FFF
 
 
-# random.randint()
+# rand.randint()
 
 
 class Seed(object):
