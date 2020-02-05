@@ -77,8 +77,13 @@ class SaveManager(object):
 
     def has_save_game(self):
         """Returns True if the save path and file exist."""
-        save_file = self.saveFileOLD.format(self.save_name)
-        return os.path.exists(os.path.join(self.savePath, save_file))
+        save_file_old = self.saveFileOLD.format(self.save_name)
+        save_file_old_path = os.path.join(self.savePath, save_file_old)
+
+        save_file = self.saveFile.format(self.save_name)
+        save_file_path = os.path.join(self.savePath, save_file)
+
+        return os.path.exists(save_file_path) or os.path.exists(save_file_old_path)
 
     # noinspection PyUnresolvedReferences
     def load_save(self, scene):
@@ -188,8 +193,9 @@ class SaveManager(object):
                     ]
                 },
                 "random": loaded_save["random"],
-                "version": "0.2.0"
+                "version": "0.2.0.2"
             }
+
 
             if "version" in nzt_data.keys():
                 if nzt_data["version"] == "0.1.0":
@@ -205,12 +211,16 @@ class SaveManager(object):
                     nzt_data["Player"]["maxHealth"] = 50
                     x, y = nzt_data["Player"]["pos"]
                     nzt_data["Player"]["pos"] = [1200 - x, y / 700]
+                    nzt_data["Player"]["level"] = 1
                 if nzt_data["version"] == "0.2.0":
                     for bubble in nzt_data["Map"]["Bubbles"]:
                         x, y = bubble["pos"]
                         bubble["pos"] = [1200 - x, y / 700]
                     x, y = nzt_data["Player"]["pos"]
                     nzt_data["Player"]["pos"] = [1200 - x, y / 700]
+                    nzt_data["Player"]["level"] = 1
+                elif nzt_data["version"] == "0.2.0.1":
+                    nzt_data["Player"]["level"] = 1
             else:
                 for bubble in nzt_data["Map"]["Bubbles"]:
                     bubble["Multipliers"] = {"attack": g.NAME2BUBBLE[bubble["id"]].attackMultiplier,
@@ -224,7 +234,8 @@ class SaveManager(object):
                 nzt_data["Player"]["maxHealth"] = 50.0
                 x, y = nzt_data["Player"]["pos"]
                 nzt_data["Player"]["pos"] = [1200 - x, y / 700]
-            nzt_data["version"] = "0.2.0.1"
+                nzt_data["Player"]["level"] = 1
+            nzt_data["version"] = "0.2.0.2"
 
             save_file2 = 'Save-{}.nzt'.format(self.save_name)
             save_file_path2 = os.path.join(self.savePath, save_file2)
@@ -243,6 +254,7 @@ class SaveManager(object):
             health = nzt_data["Player"]["health"]
             max_health = nzt_data["Player"]["maxHealth"]
             score = loaded_save["player"][0][1]
+            level = nzt_data["Player"]["level"]
 
             pos = nzt_data["Player"]["pos"]
             x, y = pos
@@ -254,6 +266,7 @@ class SaveManager(object):
             scene.player.position = Position2D(pos)
             scene.player.rotation = rot
             scene.player.score = score
+            scene.player.level = level
             scene.player.set_health(Float(health))
             scene.player.set_max_health(Float(max_health))
             scene.player.ghostMode = ghost_mode
@@ -290,12 +303,16 @@ class SaveManager(object):
                     nzt_data["Player"]["maxHealth"] = 50
                     x, y = nzt_data["Player"]["pos"]
                     nzt_data["Player"]["pos"] = [1200 - x, y / 700]
+                    nzt_data["Player"]["level"] = 1
                 if nzt_data["version"] == "0.2.0":
                     for bubble in nzt_data["Map"]["Bubbles"]:
                         x, y = bubble["pos"]
                         bubble["pos"] = [1200 - x, y / 700]
                     x, y = nzt_data["Player"]["pos"]
                     nzt_data["Player"]["pos"] = [1200 - x, y / 700]
+                    nzt_data["Player"]["level"] = 1
+                elif nzt_data["version"] == "0.2.0.1":
+                    nzt_data["Player"]["level"] = 1
             else:
                 for bubble in nzt_data["Map"]["Bubbles"]:
                     bubble["Multipliers"] = {"attack": g.NAME2BUBBLE[bubble["id"]].attackMultiplier,
@@ -309,7 +326,8 @@ class SaveManager(object):
                 nzt_data["Player"]["maxHealth"] = 50.0
                 x, y = nzt_data["Player"]["pos"]
                 nzt_data["Player"]["pos"] = [1200 - x, y / 700]
-            nzt_data["version"] = "0.2.0.1"
+                nzt_data["Player"]["level"] = 1
+            nzt_data["version"] = "0.2.0.2"
 
             for bubble in nzt_data["Map"]["Bubbles"]:
                 # print(f"SET POS A: {bubble['pos'][0], bubble['pos'][1]}")
@@ -322,6 +340,7 @@ class SaveManager(object):
             health = nzt_data["Player"]["health"]
             max_health = nzt_data["Player"]["maxHealth"]
             score = nzt_data["Player"]["score"]
+            level = nzt_data["Player"]["level"]
 
             # Pos- / Rotation
             pos = Position2D(nzt_data["Player"]["pos"])
@@ -336,6 +355,7 @@ class SaveManager(object):
             scene.player.position = pos
             scene.player.rotation = rot
             scene.player.score = score
+            scene.player.level = level
             scene.player.ghostMode = ghost_mode
             scene.player.set_health(Float(health))
             scene.player.set_max_health(Float(max_health))
@@ -379,12 +399,13 @@ class SaveManager(object):
                 },
                 "rot": event.player.rotation,
                 "pos": [
-                    event.player.position.x,
-                    event.player.position.y
+                    event.window.width - event.player.position.x,
+                    event.player.position.y / event.window.height
                 ],
                 "score": event.player.score,
                 "health": Float(event.player.get_max_health()),
-                "maxHealth": Float(event.player.get_max_health())
+                "maxHealth": Float(event.player.get_max_health()),
+                "level": Integer(event.player.level)
             },
             "Map": {
                 "Bubbles": [
@@ -393,8 +414,8 @@ class SaveManager(object):
                         "size": bubbleobject.size,
                         "speed": bubbleobject.speed,
                         "pos": [
-                            bubbleobject.position.x,
-                            bubbleobject.position.y
+                            event.window.width - bubbleobject.position.x,
+                            bubbleobject.position.y / event.window.height
                         ],
                         "Multiplier": {
                             "attack": bubbleobject.attackMultiplier,
@@ -404,7 +425,7 @@ class SaveManager(object):
                 ]
             },
             "random": event.scene.random.getstate(),
-            "version": "0.2.0"
+            "version": "0.2.0.2"
         }
 
         # print(event.scene.rand.getstate())

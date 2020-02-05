@@ -8,6 +8,7 @@ from sprites.player import Player
 BUBBLES: List[Bubble] = list()
 BUBBLES.append(NormalBubble())
 BUBBLES.append(SpeedyBubble())
+BUBBLES.append(KeyBubble())
 BUBBLES.append(DoubleBubble())
 BUBBLES.append(TripleBubble())
 BUBBLES.append(DecupleBubble())

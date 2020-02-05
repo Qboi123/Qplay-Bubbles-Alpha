@@ -495,9 +495,9 @@ def createbubble_image(size, inner=None, *colors):
     if inner is not None:
         png2 = _new('RGBA', size, (0, 0, 0, 0))
         # noinspection PyUnboundLocalVariable
-        inner_im = inner_im.resize((size[0] - int(i), size[1] - int(i)))
+        if size[0] - int(i) < png2.width:
+            inner_im = inner_im.resize((size[0] - int(i), size[1] - int(i)))
         png2.paste(inner_im, (int(i / 2), int(i / 2)))
-
         im = Image.alpha_composite(png2, im)
 
     return pillow2pyglet(im=im)

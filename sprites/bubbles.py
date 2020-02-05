@@ -22,8 +22,8 @@ class NormalBubble(Bubble):
 
         BubblePriorityCalculator.add(self, 150000)
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         pass
@@ -49,11 +49,36 @@ class SpeedyBubble(Bubble):
 
         BubblePriorityCalculator.add(self, 50000)
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         pass
+
+
+class KeyBubble(Bubble):
+    def __init__(self):
+        super(KeyBubble, self).__init__()
+
+        self.set_unlocalized_name("key_bubble")
+        self.randomMin = 15000
+        self.randomMax = 25000
+        self.speedMin = 20
+        self.speedMax = 30
+
+        self.health: Float = 1.5
+        self.maxHealth: Float = 1.0
+        self.scoreMultiplier: Float = 1.0
+        self.attackMultiplier: Float = 0.0
+        self.defenceMultiplier: Float = 1.0
+
+        BubblePriorityCalculator.add(self, 300)
+
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, 48, speed)
+
+    def on_collision(self, event: CollisionEvent):
+        event.player.level += 1
 
 
 class DoubleBubble(Bubble):
@@ -72,8 +97,8 @@ class DoubleBubble(Bubble):
 
         BubblePriorityCalculator.add(self, 20000)
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         pass
@@ -95,8 +120,8 @@ class TripleBubble(Bubble):
 
         BubblePriorityCalculator.add(self, 16667)
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         pass
@@ -118,8 +143,8 @@ class DecupleBubble(Bubble):
 
         BubblePriorityCalculator.add(self, 2000)
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         pass
@@ -142,8 +167,8 @@ class DoubleScoreStatBubble(Bubble):
 
         BubblePriorityCalculator.add(self, 2000)
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         event.player.add_effect(EFFECTS.ScoreStatusEffect(event.eventObject.speed / 1.2, 2, event.scene))
@@ -166,8 +191,8 @@ class TripleScoreStatBubble(Bubble):
 
         BubblePriorityCalculator.add(self, 1667)
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         event.player.add_effect(EFFECTS.ScoreStatusEffect(event.eventObject.speed / 2.4, 3, event.scene))
@@ -190,8 +215,8 @@ class DecupleScoreStatBubble(Bubble):
 
         BubblePriorityCalculator.add(self, 200)
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         event.player.add_effect(EFFECTS.ScoreStatusEffect(event.eventObject.speed / 2.4, 3, event.scene))
@@ -213,9 +238,9 @@ class DeadlyBubble(Bubble):
 
         BubblePriorityCalculator.add(self, 75000)
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
+    def __call__(self, x, y, map, scene, size=None, speed=None):
         # print(Integer(size / 10))
-        return BubbleObject(self, x, y, batch, size, speed, defen_mp=Float(size / 10))
+        return BubbleObject(self, x, y, scene, size, speed, defen_mp=Float(size / 10))
 
     def on_collision(self, event: CollisionEvent):
         pass
@@ -237,8 +262,8 @@ class LifeBubble(Bubble):
 
         BubblePriorityCalculator.add(self, 10000)
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed, defen_mp=Integer(size / 10))
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed, defen_mp=Integer(size / 10))
 
     def on_collision(self, event: CollisionEvent):
         event.player.regen(1)
@@ -260,8 +285,8 @@ class TeleporterBubble(Bubble):
 
         BubblePriorityCalculator.add(self, 1000)
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         event.player.add_effect(EFFECTS.TeleportingEffect(5, event.eventObject.size / 40, event.scene))
@@ -283,8 +308,8 @@ class SpeedBoostBubble(Bubble):
 
         BubblePriorityCalculator.add(self, 2000)
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         event.player.add_effect(EFFECTS.SpeedBoostEffect(7, event.eventObject.size / 40, event.scene))
@@ -306,8 +331,8 @@ class SlownessBubble(Bubble):
 
         BubblePriorityCalculator.add(self, 8000)
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         event.player.add_effect(EFFECTS.SlownessEffect(8, event.eventObject.size / 60, event.scene))
@@ -330,8 +355,8 @@ class UltraBubble(Bubble):
         BubblePriorityCalculator.add(self, 10)
 
     # noinspection PyUnusedLocal
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, 48, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, 48, speed)
 
     def on_collision(self, event: CollisionEvent):
         event.player.add_effect(EFFECTS.ScoreStatusEffect(20, 10, event.scene))
@@ -355,8 +380,8 @@ class GhostBubble(Bubble):
         BubblePriorityCalculator.add(self, 2500)
 
     # noinspection PyUnusedLocal
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         # pass
@@ -381,8 +406,8 @@ class ParalyseBubble(Bubble):
         BubblePriorityCalculator.add(self, 7500)
 
     # noinspection PyUnusedLocal
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         # pass
@@ -407,8 +432,8 @@ class ConfusionBubble(Bubble):
         BubblePriorityCalculator.add(self, 30303)
 
     # noinspection PyUnusedLocal
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         # pass
@@ -432,8 +457,8 @@ class ProtectionBubble(Bubble):
 
         BubblePriorityCalculator.add(self, 2000)
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
+    def __call__(self, x, y, map, scene, size=None, speed=None):
+        return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         event.player.add_effect(EFFECTS.ProtectionEffect(event.eventObject.speed / 8, 1, event.scene))

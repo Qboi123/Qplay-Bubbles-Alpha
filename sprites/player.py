@@ -32,8 +32,8 @@ class Player(Collidable):
         super(Player, self).__init__(sprite)
 
         # Labels and texts
-        self.statsLabel: Label = Label("Not loaded yet", "Helvetica", 14, anchor_x="left", anchor_y="baseline",
-                                       batch=scene.foregroundBatch, x=0, y=scene.window.height - 32, multiline=True,
+        self.statsLabel: Label = Label("Not loaded yet", "Helvetica", 14, anchor_x="left", anchor_y="top",
+                                       batch=scene.foregroundBatch, x=0, y=scene.window.height, multiline=True,
                                        width=scene.window.width, bold=True, color=(255, 255, 255, 127))
         self.gameOverText: Label = Label("", "Helvetica", 36, anchor_x="center", anchor_y="baseline", align="center",
                                          batch=scene.foregroundBatch, x=scene.window.width / 2,
@@ -54,6 +54,7 @@ class Player(Collidable):
 
         # Stats
         self.score: Integer = 0
+        self.level: Integer = 1
         self.health: Property = Property(self.get_health, self.set_health)
 
         # Active effects
@@ -163,10 +164,10 @@ class Player(Collidable):
         :return:
         """
         if not self.dead:
-            self.statsLabel.text = f"Score: {self.score}\nHP: {int(self.get_health())} / {int(self.sprite.maxHealth)}"
+            self.statsLabel.text = f"Score: {self.score}\nLevel: {self.level}\nHP: {int(self.get_health())} / {int(self.sprite.maxHealth)}"
             self.statsLabel.draw()
         else:
-            self.statsLabel.text = f"\nHP: {self.get_health()} / {self.sprite.maxHealth}"
+            self.statsLabel.text = f"\nLevel: {self.level}\nHP: {self.get_health()} / {self.sprite.maxHealth}"
             self.statsLabel.draw()
 
     def update(self, event: UpdateEvent):

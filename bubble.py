@@ -160,9 +160,9 @@ class BubbleObject(Collidable):
                 dx = -self.speed
                 dy = 0
 
-                speed_multiply = event.player.score / 100000
-                if speed_multiply < 0.25:
-                    speed_multiply = 0.25
+                speed_div = 10
+
+                speed_multiply = (event.player.level / speed_div) + 0.4
 
                 dx *= speed_multiply
                 # noinspection PyUnboundLocalVariable

@@ -143,7 +143,7 @@ class Resources(object):
             if bubble_data["type"] == model_types[0]:
                 for i in range(_min, _max + 1):
                     bub[bubble_id][i] = utils.createbubble_image(
-                        (i, i), bubble_data["inner"] if "inner" in bubble_data.keys() else None, *bubble_data["colors"]
+                        (i, i), "assets/textures/"+bubble_data["inner"]+".png" if "inner" in bubble_data.keys() else None, *bubble_data["colors"]
                     )
                     center_image(bub[bubble_id][i])
             elif bubble_data["type"] == model_types[1]:
