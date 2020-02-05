@@ -5,7 +5,7 @@ from pyglet.sprite import Sprite
 import globals as g
 import utils
 from events import CollisionEvent, DrawEvent, UpdateEvent, TickUpdateEvent, BubbleUpdateEvent, BubbleTickUpdateEvent, \
-    PauseEvent, UnpauseEvent
+    PauseEvent, UnpauseEvent, ResizeEvent
 from exceptions import UnlocalizedNameError
 from objects import Collidable
 from resources import Resources
@@ -39,7 +39,7 @@ class Bubble(object):
         else:
             raise UnlocalizedNameError("There are no unlocalized names defined!")
 
-    def __call__(self, x, y, map, batch, size=None, speed=None):
+    def __call__(self, x, y, map, scene, size=None, speed=None):
         pass  # return BubbleObject(self, x, y, batch, size, speed)
 
     def set_unlocalized_name(self, name):
@@ -70,7 +70,7 @@ class Bubble(object):
 # noinspection PyUnusedLocal
 class BubbleObject(Collidable):
     # noinspection SpellCheckingInspection
-    def __init__(self, base_class, x, y, batch, size, speed,
+    def __init__(self, base_class, x, y, scene, size, speed,
                  attac_mp: Float = None, defen_mp: Float = None, regen_mp: Float = None, score_mp: Integer = 0):
         base_class: Bubble
 
@@ -117,7 +117,7 @@ class BubbleObject(Collidable):
         # Sprite
         sprite: Entity = Entity(defence_mp=self.defenceMultiplier, attack_mp=self.attackMultiplier,
                                 regen_mp=self.regenMultiplier, health=self.health, max_health=self.maxHealth,
-                                image=image, x=x, y=y, batch=batch)
+                                image=image, x=x, y=y, batch=scene.batch)
         super(BubbleObject, self).__init__(sprite)
 
         # (Bubble) Image
@@ -129,6 +129,15 @@ class BubbleObject(Collidable):
         CollisionEvent.bind(self.on_collision)
         PauseEvent.bind(self.on_pause)
         UnpauseEvent.bind(self.on_unpause)
+        ResizeEvent.bind(self.on_resize)
+
+    def on_resize(self, event: ResizeEvent):
+        y_new = event.height * (self.position.y / event.oldHeight)
+        x_new = event.width - (event.oldWidth - self.position.x)
+
+        # print(f"RESIZE: {x_new, y_new}")
+        self.position.y = y_new
+        self.position.x = x_new
 
     def draw(self, event):
         self.sprite.draw()
@@ -156,9 +165,8 @@ class BubbleObject(Collidable):
                     speed_multiply = 0.25
 
                 dx *= speed_multiply
-
                 # noinspection PyUnboundLocalVariable
-                self.position += (dx * event.dt * (1 / utils.TICKS_PER_SEC), dy * event.dt * (1 / utils.TICKS_PER_SEC))
+                self.position += ((dx * event.dt * (1 / utils.TICKS_PER_SEC)), dy * event.dt * (1 / utils.TICKS_PER_SEC))
                 self.sprite.update(x=self.position.x, y=self.position.y)
             BubbleUpdateEvent(event.dt, self, event.scene)
 
@@ -183,6 +191,9 @@ class BubbleObject(Collidable):
         DrawEvent.unbind(self.draw)
         UpdateEvent.unbind(self.update)
         CollisionEvent.unbind(self.on_collision)
+        PauseEvent.unbind(self.on_pause)
+        UnpauseEvent.unbind(self.on_unpause)
+        ResizeEvent.unbind(self.on_resize)
 
 
 class BubblePriorityCalculator(object):

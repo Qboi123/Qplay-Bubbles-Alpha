@@ -93,7 +93,7 @@ class TripleBubble(Bubble):
         self.attackMultiplier: Float = 0.0
         self.defenceMultiplier: Float = 1.0
 
-        BubblePriorityCalculator.add(self, 10000)
+        BubblePriorityCalculator.add(self, 16667)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
         return BubbleObject(self, x, y, batch, size, speed)
@@ -116,13 +116,85 @@ class DecupleBubble(Bubble):
         self.attackMultiplier: Float = 0.0
         self.defenceMultiplier: Float = 1.0
 
-        BubblePriorityCalculator.add(self, 500)
+        BubblePriorityCalculator.add(self, 2000)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
         return BubbleObject(self, x, y, batch, size, speed)
 
     def on_collision(self, event: CollisionEvent):
         pass
+
+
+class DoubleScoreStatBubble(Bubble):
+    def __init__(self):
+        super(DoubleScoreStatBubble, self).__init__()
+
+        self.set_unlocalized_name("double_state_bubble")
+        self.speedMin = 25
+        self.speedMax = 33
+        self.scoreMultiplier = 2
+
+        self.health: Float = 1.5
+        self.maxHealth: Float = 1.0
+        self.scoreMultiplier: Float = 2.0
+        self.attackMultiplier: Float = 0.0
+        self.defenceMultiplier: Float = 1.0
+
+        BubblePriorityCalculator.add(self, 2000)
+
+    def __call__(self, x, y, map, batch, size=None, speed=None):
+        return BubbleObject(self, x, y, batch, size, speed)
+
+    def on_collision(self, event: CollisionEvent):
+        event.player.add_effect(EFFECTS.ScoreStatusEffect(event.eventObject.speed / 1.2, 2, event.scene))
+
+
+class TripleScoreStatBubble(Bubble):
+    def __init__(self):
+        super(TripleScoreStatBubble, self).__init__()
+
+        self.set_unlocalized_name("triple_state_bubble")
+        self.speedMin = 46
+        self.speedMax = 63
+        self.scoreMultiplier = 2
+
+        self.health: Float = 2.0
+        self.maxHealth: Float = 1.0
+        self.scoreMultiplier: Float = 3.0
+        self.attackMultiplier: Float = 0.0
+        self.defenceMultiplier: Float = 1.5
+
+        BubblePriorityCalculator.add(self, 1667)
+
+    def __call__(self, x, y, map, batch, size=None, speed=None):
+        return BubbleObject(self, x, y, batch, size, speed)
+
+    def on_collision(self, event: CollisionEvent):
+        event.player.add_effect(EFFECTS.ScoreStatusEffect(event.eventObject.speed / 2.4, 3, event.scene))
+
+
+class DecupleScoreStatBubble(Bubble):
+    def __init__(self):
+        super(DecupleScoreStatBubble, self).__init__()
+
+        self.set_unlocalized_name("decuple_state_bubble")
+        self.speedMin = 46
+        self.speedMax = 63
+        self.scoreMultiplier = 2
+
+        self.health: Float = 2.0
+        self.maxHealth: Float = 1.0
+        self.scoreMultiplier: Float = 3.0
+        self.attackMultiplier: Float = 0.0
+        self.defenceMultiplier: Float = 1.5
+
+        BubblePriorityCalculator.add(self, 200)
+
+    def __call__(self, x, y, map, batch, size=None, speed=None):
+        return BubbleObject(self, x, y, batch, size, speed)
+
+    def on_collision(self, event: CollisionEvent):
+        event.player.add_effect(EFFECTS.ScoreStatusEffect(event.eventObject.speed / 2.4, 3, event.scene))
 
 
 class DeadlyBubble(Bubble):
@@ -142,7 +214,7 @@ class DeadlyBubble(Bubble):
         BubblePriorityCalculator.add(self, 75000)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
-        print(Integer(size / 10))
+        # print(Integer(size / 10))
         return BubbleObject(self, x, y, batch, size, speed, defen_mp=Float(size / 10))
 
     def on_collision(self, event: CollisionEvent):
@@ -163,7 +235,7 @@ class LifeBubble(Bubble):
         self.attackMultiplier: Float = 0.0
         self.defenceMultiplier: Float = 1.0
 
-        BubblePriorityCalculator.add(self, 15000)
+        BubblePriorityCalculator.add(self, 10000)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
         return BubbleObject(self, x, y, batch, size, speed, defen_mp=Integer(size / 10))
@@ -255,14 +327,15 @@ class UltraBubble(Bubble):
         self.attackMultiplier: Float = 0.0
         self.defenceMultiplier: Float = 2.0
 
-        BubblePriorityCalculator.add(self, 100)
+        BubblePriorityCalculator.add(self, 10)
 
     # noinspection PyUnusedLocal
     def __call__(self, x, y, map, batch, size=None, speed=None):
         return BubbleObject(self, x, y, batch, 48, speed)
 
     def on_collision(self, event: CollisionEvent):
-        event.player.add_effect(EFFECTS.ScoreStatusEffect(10, 10, event.scene))
+        event.player.add_effect(EFFECTS.ScoreStatusEffect(20, 10, event.scene))
+        event.player.add_effect(EFFECTS.ProtectionEffect(12.5, 1, event.scene))
 
 
 class GhostBubble(Bubble):
@@ -342,54 +415,6 @@ class ConfusionBubble(Bubble):
         event.player.add_effect(EFFECTS.ConfusionEffect(6, 1, event.scene))
 
 
-class DoubleScoreStatBubble(Bubble):
-    def __init__(self):
-        super(DoubleScoreStatBubble, self).__init__()
-
-        self.set_unlocalized_name("double_state_bubble")
-        self.speedMin = 25
-        self.speedMax = 33
-        self.scoreMultiplier = 2
-
-        self.health: Float = 1.5
-        self.maxHealth: Float = 1.0
-        self.scoreMultiplier: Float = 2.0
-        self.attackMultiplier: Float = 0.0
-        self.defenceMultiplier: Float = 1.0
-
-        BubblePriorityCalculator.add(self, 875)
-
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
-
-    def on_collision(self, event: CollisionEvent):
-        event.player.add_effect(EFFECTS.ScoreStatusEffect(event.eventObject.speed / 1.2, 2, event.scene))
-
-
-class TripleScoreStatBubble(Bubble):
-    def __init__(self):
-        super(TripleScoreStatBubble, self).__init__()
-
-        self.set_unlocalized_name("triple_state_bubble")
-        self.speedMin = 46
-        self.speedMax = 63
-        self.scoreMultiplier = 2
-
-        self.health: Float = 2.0
-        self.maxHealth: Float = 1.0
-        self.scoreMultiplier: Float = 3.0
-        self.attackMultiplier: Float = 0.0
-        self.defenceMultiplier: Float = 1.5
-
-        BubblePriorityCalculator.add(self, 450)
-
-    def __call__(self, x, y, map, batch, size=None, speed=None):
-        return BubbleObject(self, x, y, batch, size, speed)
-
-    def on_collision(self, event: CollisionEvent):
-        event.player.add_effect(EFFECTS.ScoreStatusEffect(event.eventObject.speed / 2.4, 3, event.scene))
-
-
 class ProtectionBubble(Bubble):
     def __init__(self):
         super(ProtectionBubble, self).__init__()
@@ -405,10 +430,11 @@ class ProtectionBubble(Bubble):
         self.attackMultiplier: Float = 0.0
         self.defenceMultiplier: Float = 3.0
 
-        BubblePriorityCalculator.add(self, 45000)  # 450
+        BubblePriorityCalculator.add(self, 2000)
 
     def __call__(self, x, y, map, batch, size=None, speed=None):
         return BubbleObject(self, x, y, batch, size, speed)
 
     def on_collision(self, event: CollisionEvent):
-        event.player.add_effect(EFFECTS.ProtectionEffect(event.eventObject.speed / 2.4, 1, event.scene))
+        event.player.add_effect(EFFECTS.ProtectionEffect(event.eventObject.speed / 8, 1, event.scene))
+        event.player.regen(event.eventObject.size / 20)

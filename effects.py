@@ -330,10 +330,11 @@ class ProtectionEffect(Effect):
             effect: AppliedEffect
             if effect.baseEffectClass.is_bad_effect():
                 effect.stop()
-        scene.player.damageHook = lambda atk: None
+        scene.player.set_defence(4)
 
     def on_effect_stopped(self, appliedeffect: AppliedEffect, scene):
         scene.player.damageHook = None
+        scene.player.set_defence(1)
 
 
 # noinspection PyPep8Naming,PyUnusedLocal,PyShadowingNames,PyAttributeOutsideInit

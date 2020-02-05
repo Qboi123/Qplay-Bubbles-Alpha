@@ -10,7 +10,8 @@ from pyglet.window import key
 
 from bubble import BubbleObject
 from events import CollisionEvent, UpdateEvent, DrawEvent, TickUpdateEvent, PlayerCollisionEvent, AutoSaveEvent, \
-    PauseEvent, UnpauseEvent
+    PauseEvent, UnpauseEvent, ResizeEvent
+from graphics.projection import WindowViewport, OrthographicProjection
 from gui import EffectGUI, GameGUI, PauseGUI
 from map import Map
 from objects import Collidable
@@ -97,7 +98,11 @@ class GameScene(Scene):
         self.backgroundBatch: pyglet.graphics.Batch = pyglet.graphics.Batch()
         self.batch: pyglet.graphics.Batch = pyglet.graphics.Batch()
         self.playerBatch: pyglet.graphics.Batch = pyglet.graphics.Batch()
+        self.guiBatch: pyglet.graphics.Batch = pyglet.graphics.Batch()
         self.foregroundBatch: pyglet.graphics.Batch = pyglet.graphics.Batch()
+
+        self.viewport: WindowViewport = WindowViewport(self.window)
+        self.projection: OrthographicProjection = OrthographicProjection(self.viewport)
 
         self.player: Optional[Player] = None
         self.game_objects: List[Union[Any, Collidable]] = list()
@@ -117,6 +122,21 @@ class GameScene(Scene):
         # Define local player variables
         self.player_rot_strafe = 0
         self.player_mpx_strafe = 0
+
+        self.backgroundColor = (0.1, 0.5, 0.55, 1)
+
+        self.oldWidth = window.width
+        self.oldHeight = window.height
+
+        self.windowSize = self.window.get_size()
+
+    def on_resize(self, width, height):
+        self.windowSize = (width, height)
+        self.projection.apply()
+        ResizeEvent(width, height, self.oldWidth, self.oldHeight, self)
+        self.oldWidth = width
+        self.oldHeight = height
+        # print('The window was resized to %dx%d' % (width, height))
 
     def reset_strafe(self):
         # Define local player variables
@@ -151,13 +171,14 @@ class GameScene(Scene):
 
     def on_draw(self):
         try:
-            glClearColor(0.1, 0.5, 0.55, 1)
+            glClearColor(*self.backgroundColor)
             # glClearColor(0.25, 0.25, 0.25, 1)
             self.window.clear()
             self.backgroundBatch.draw()
             DrawEvent(self)
             self.batch.draw()
             self.playerBatch.draw()
+            self.guiBatch.draw()
             self.foregroundBatch.draw()
             self.fps.draw()
         except Exception as e:

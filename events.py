@@ -37,6 +37,44 @@ class Event(object):
 
 
 # noinspection PyUnusedClass
+class ResizeEvent(Event):
+    _handlers = list()
+
+    # noinspection PyMissingConstructor
+    def __init__(self, width, height, old_width, old_height, scene):
+        self.width = width
+        self.height = height
+        self.size = (width, height)
+
+        self.oldWidth = old_width
+        self.oldHeight = old_height
+        self.oldSize = (old_width, old_height)
+
+        self.window: Window = scene.window
+        self.batch: Batch = scene.batch
+        self.gameObjects = scene.game_objects
+        self.map = scene.map
+        self.player = scene.player
+        self.scene = scene
+
+        handler_ = None
+        for handler in self._handlers:
+            handler(self)
+
+    @classmethod
+    def bind(cls, func):
+        cls._handlers.append(func)
+        # # print(f"Bind: {func.__name__}")
+        return func
+
+    @classmethod
+    def unbind(cls, func):
+        cls._handlers.remove(func)
+        # print(f"Unbind: {func.__name__}")
+        return func
+
+
+# noinspection PyUnusedClass
 class CollisionEvent(Event):
     _handlers = list()
 

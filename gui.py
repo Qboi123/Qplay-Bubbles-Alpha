@@ -9,7 +9,7 @@ from pyglet.text import Label
 import sprites
 from effects import Effect
 from events import EffectStartedEvent, EffectStoppedEvent, EffectUpdateEvent, DrawEvent, UpdateEvent, PauseEvent, \
-    UnpauseEvent, AutoSaveEvent
+    UnpauseEvent, AutoSaveEvent, ResizeEvent
 from resources import Resources
 
 
@@ -77,8 +77,11 @@ class EffectGUI(object):
                 self.currentY -= self.stepY
 
     def on_effect_update(self, event: EffectUpdateEvent):
-        self.sprites[event.appliedEffect][2].text = str(int(event.appliedEffect.timeRemaining))
-        self.sprites[event.appliedEffect][2].draw()
+        try:
+            self.sprites[event.appliedEffect][2].text = str(int(event.appliedEffect.timeRemaining))
+            self.sprites[event.appliedEffect][2].draw()
+        except KeyError:
+            pass
 
     def on_draw(self, event: DrawEvent):
         for sprites in self.sprites.values():
@@ -92,9 +95,14 @@ class GameGUI(object):
         self.sprites: Dict[str, Union[Sprite, Label]] = dict()
 
         self.sprites["BG"] = Sprite(Resources.get_resource("gui", "scoreboard_bg"), 0, scene.window.height-72, batch=scene.batch)
+        self.sprites["BG"].scale_x = scene.window.width
 
         UpdateEvent.bind(self.on_update)
         DrawEvent.bind(self.on_draw)
+        ResizeEvent.bind(self.on_resize)
+
+    def on_resize(self, event: ResizeEvent):
+        self.sprites["BG"].y = event.height-72
 
     def on_update(self, event: UpdateEvent):
         pass
@@ -118,10 +126,16 @@ class PauseGUI(object):
         PauseEvent.bind(self.on_pause)
         # DrawEvent.bind(self.on_draw)
         UnpauseEvent.bind(self.on_unpause)
+        ResizeEvent.bind(self.on_resize)
 
     def on_pause(self, event: PauseEvent):
+        self.oldBgColor = event.scene.backgroundColor
+        event.scene.backgroundColor = (0.05, 0.25, 0.275, 1.0)
+
         bg = resource.image("textures/gui/pauseBG.png")
-        self.sprites["BG"] = Sprite(bg, 0, 0, batch=event.scene.foregroundBatch)
+        self.sprites["BG"] = Sprite(bg, 0, 0, batch=event.scene.guiBatch)
+        self.sprites["BG"].scale_x = event.window.width
+        self.sprites["BG"].scale_y = event.window.height-72
 
         for bubble in sprites.BUBBLES:
             if not bubble.hideInPause:
@@ -137,7 +151,45 @@ class PauseGUI(object):
                     self.currentX += 256
         AutoSaveEvent(1, event.scene)
 
+    def on_resize(self, event: ResizeEvent):
+        if not event.scene.pauseMode:
+            return
+        event.scene.backgroundColor = self.oldBgColor
+        event.window.clear()
+
+        for key, value in self.sprites.copy().items():
+            value.delete()
+            del self.sprites[key]
+
+        self.currentX = self.startX
+        self.currentY = self.startY
+
+        self.startY = event.height - 128
+
+        self.oldBgColor = event.scene.backgroundColor
+        event.scene.backgroundColor = (0.05, 0.25, 0.275, 1.0)
+
+        bg = resource.image("textures/gui/pauseBG.png")
+        self.sprites["BG"] = Sprite(bg, 0, 0, batch=event.scene.guiBatch)
+        self.sprites["BG"].scale_x = event.width
+        self.sprites["BG"].scale_y = event.height-72
+
+        for bubble in sprites.BUBBLES:
+            if not bubble.hideInPause:
+                image = Resources.get_resource("bubbles", bubble.get_unlocalized_name(), 40)
+                self.sprites[bubble.get_unlocalized_name()+".image"] = Sprite(
+                    image, self.currentX, self.currentY, batch=event.scene.foregroundBatch)
+                self.sprites[bubble.get_unlocalized_name()+".label"] = Label(
+                    Resources.get_localized_name(f"bubble.{bubble.get_unlocalized_name()}.name"),
+                    "Arial", 15, color=(255, 255, 255, 255), x=self.currentX + 30, y=self.currentY - 7.5, batch=event.scene.foregroundBatch)
+                self.currentY -= 48
+                if self.currentY <= self.endY:
+                    self.currentY = self.startY
+                    self.currentX += 256
+        # AutoSaveEvent(1, event.scene)
+
     def on_unpause(self, event: UnpauseEvent):
+        event.scene.backgroundColor = self.oldBgColor
         for key, value in self.sprites.copy().items():
             value.delete()
             del self.sprites[key]

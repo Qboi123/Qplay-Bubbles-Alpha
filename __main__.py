@@ -4,8 +4,18 @@ VERSION: Tuple = ("indev", 0, 1, 0)
 
 
 def main(args):
+    display = pyglet.canvas.get_display()
+    # display = platform.get_default_display()
+    screen = display.get_default_screen()
+    # screen_width = screen.width
+    # screen_height = screen.height
+
+    screen_width = 1280
+    screen_height = 800
+
     init.init()
-    window = pyglet.window.Window(1200, 700, "Qplay Bubbles %s" % version2name(VERSION))
+    window = pyglet.window.Window(screen_width, screen_height, caption="Qplay Bubbles %s" % version2name(VERSION), resizable=False, fullscreen=True, display=display, screen=screen)
+    window.set_minimum_size(800, 600)
     scene_manager = SceneManager(window, init)
     init.post_init()
     pyglet.clock.schedule_interval(scene_manager.update, UPDATE_INTERVAL)

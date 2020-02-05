@@ -168,8 +168,8 @@ class SaveManager(object):
                     },
                     "rot": loaded_save["player"][0][3],
                     "pos": [
-                        loaded_save["player"][0][2].x,
-                        loaded_save["player"][0][2].y
+                        float(1200 - loaded_save["player"][0][2].x),
+                        float(loaded_save["player"][0][2].y / 700)
                     ],
                     "score": loaded_save["player"][0][1],
                     "lives": loaded_save["player"][0][0]
@@ -181,8 +181,8 @@ class SaveManager(object):
                             "size": size,
                             "speed": speed,
                             "pos": [
-                                pos.x,
-                                pos.y
+                                float(1200 - pos.x),
+                                float(pos.y / 700)
                             ]
                         } for id_, size, speed, pos in loaded_save["bubbles"])
                     ]
@@ -198,18 +198,33 @@ class SaveManager(object):
                                                  "defence": g.NAME2BUBBLE[bubble["id"]].defenceMultiplier}
                         bubble["health"] = g.NAME2BUBBLE[bubble["id"]].health
                         bubble["maxHealth"] = g.NAME2BUBBLE[bubble["id"]].maxHealth
-                    nzt_data["Player"]["health"] = 50 * loaded_save["player"][0][0] / 10 if \
-                        loaded_save["player"][0][0] <= 10 else 50
+                        x, y = bubble["pos"]
+                        bubble["pos"] = [1200 - x, y / 700]
+                    nzt_data["Player"]["health"] = 50 * nzt_data["Player"]["lives"] / 10 if \
+                        nzt_data["Player"]["lives"] <= 10 else 50
                     nzt_data["Player"]["maxHealth"] = 50
+                    x, y = nzt_data["Player"]["pos"]
+                    nzt_data["Player"]["pos"] = [1200 - x, y / 700]
+                if nzt_data["version"] == "0.2.0":
+                    for bubble in nzt_data["Map"]["Bubbles"]:
+                        x, y = bubble["pos"]
+                        bubble["pos"] = [1200 - x, y / 700]
+                    x, y = nzt_data["Player"]["pos"]
+                    nzt_data["Player"]["pos"] = [1200 - x, y / 700]
             else:
                 for bubble in nzt_data["Map"]["Bubbles"]:
                     bubble["Multipliers"] = {"attack": g.NAME2BUBBLE[bubble["id"]].attackMultiplier,
                                              "defence": g.NAME2BUBBLE[bubble["id"]].defenceMultiplier}
                     bubble["health"] = g.NAME2BUBBLE[bubble["id"]].health
                     bubble["maxHealth"] = g.NAME2BUBBLE[bubble["id"]].maxHealth
-                nzt_data["Player"]["health"] = 50 * loaded_save["player"][0][0] / 10 if \
-                    loaded_save["player"][0][0] <= 10 else 50
-                nzt_data["Player"]["maxHealth"] = 50
+                    x, y = bubble["pos"]
+                    bubble["pos"] = [1200 - x, y / 700]
+                nzt_data["Player"]["health"] = 50 * nzt_data["Player"]["lives"] / 10 if \
+                    nzt_data["Player"]["lives"] <= 10 else 50.0
+                nzt_data["Player"]["maxHealth"] = 50.0
+                x, y = nzt_data["Player"]["pos"]
+                nzt_data["Player"]["pos"] = [1200 - x, y / 700]
+            nzt_data["version"] = "0.2.0.1"
 
             save_file2 = 'Save-{}.nzt'.format(self.save_name)
             save_file_path2 = os.path.join(self.savePath, save_file2)
@@ -225,18 +240,22 @@ class SaveManager(object):
                                             scene))
 
             # Player
-            health = loaded_save["player"][0][0]
+            health = nzt_data["Player"]["health"]
+            max_health = nzt_data["Player"]["maxHealth"]
             score = loaded_save["player"][0][1]
 
-            pos = loaded_save["player"][0][2]
+            pos = nzt_data["Player"]["pos"]
+            x, y = pos
+            pos = [scene.window.width - x, y * scene.window.height]
             rot = loaded_save["player"][0][3]
 
             ghost_mode = loaded_save["player"][0][4]
 
-            scene.player._Player__position = pos
+            scene.player.position = Position2D(pos)
             scene.player.rotation = rot
             scene.player.score = score
-            scene.player.health = Integer(health)
+            scene.player.set_health(Float(health))
+            scene.player.set_max_health(Float(max_health))
             scene.player.ghostMode = ghost_mode
 
             scene.player.refresh()
@@ -264,40 +283,62 @@ class SaveManager(object):
                                                  "defence": g.NAME2BUBBLE[bubble["id"]].defenceMultiplier}
                         bubble["health"] = g.NAME2BUBBLE[bubble["id"]].health
                         bubble["maxHealth"] = g.NAME2BUBBLE[bubble["id"]].maxHealth
+                        x, y = bubble["pos"]
+                        bubble["pos"] = [1200 - x, y / 700]
                     nzt_data["Player"]["health"] = 50 * nzt_data["Player"]["lives"] / 10 if \
                         nzt_data["Player"]["lives"] <= 10 else 50
                     nzt_data["Player"]["maxHealth"] = 50
+                    x, y = nzt_data["Player"]["pos"]
+                    nzt_data["Player"]["pos"] = [1200 - x, y / 700]
+                if nzt_data["version"] == "0.2.0":
+                    for bubble in nzt_data["Map"]["Bubbles"]:
+                        x, y = bubble["pos"]
+                        bubble["pos"] = [1200 - x, y / 700]
+                    x, y = nzt_data["Player"]["pos"]
+                    nzt_data["Player"]["pos"] = [1200 - x, y / 700]
             else:
                 for bubble in nzt_data["Map"]["Bubbles"]:
                     bubble["Multipliers"] = {"attack": g.NAME2BUBBLE[bubble["id"]].attackMultiplier,
                                              "defence": g.NAME2BUBBLE[bubble["id"]].defenceMultiplier}
                     bubble["health"] = g.NAME2BUBBLE[bubble["id"]].health
                     bubble["maxHealth"] = g.NAME2BUBBLE[bubble["id"]].maxHealth
+                    x, y = bubble["pos"]
+                    bubble["pos"] = [1200 - x, y / 700]
                 nzt_data["Player"]["health"] = 50 * nzt_data["Player"]["lives"] / 10 if \
                     nzt_data["Player"]["lives"] <= 10 else 50.0
                 nzt_data["Player"]["maxHealth"] = 50.0
-            nzt_data["version"] = "0.2.0"
+                x, y = nzt_data["Player"]["pos"]
+                nzt_data["Player"]["pos"] = [1200 - x, y / 700]
+            nzt_data["version"] = "0.2.0.1"
 
             for bubble in nzt_data["Map"]["Bubbles"]:
+                # print(f"SET POS A: {bubble['pos'][0], bubble['pos'][1]}")
                 scene.game_objects.append(
                     scene.map.create_bubble(bubble["pos"][0], bubble["pos"][1], g.NAME2BUBBLE[bubble["id"]], scene.batch, bubble["size"], bubble["speed"],
                                             scene))
 
-            # Player
+            # Initialize player data variables
+            # Stats
             health = nzt_data["Player"]["health"]
+            max_health = nzt_data["Player"]["maxHealth"]
             score = nzt_data["Player"]["score"]
 
+            # Pos- / Rotation
             pos = Position2D(nzt_data["Player"]["pos"])
+            pos.x = scene.window.width - pos.x
+            pos.y = pos.y * scene.window.height
             rot = nzt_data["Player"]["rot"]
 
+            # Abilities
             ghost_mode = nzt_data["Player"]["Abilities"]["ghostMode"]
 
-            scene.player._Player__position = pos
+            # Set player data
+            scene.player.position = pos
             scene.player.rotation = rot
             scene.player.score = score
-            scene.player.health = Float(health)
             scene.player.ghostMode = ghost_mode
-
+            scene.player.set_health(Float(health))
+            scene.player.set_max_health(Float(max_health))
             scene.player.refresh()
 
             # Effects

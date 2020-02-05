@@ -28,12 +28,12 @@ class Map(object):
 
         # size_rand = rand.rand(self.tick_updates, 1)
         size_randint = random.randint(MIN_BUBBLE_SIZE, MAX_BUBBLE_SIZE)  # size_rand * 50 + 10
-        y_randint = random.randint(int(size_randint / 2), scene.window.height - 72 - int(size_randint / 2))
+        y_randint = random.randint(int(size_randint / 2), scene.window.height - 72 - int(size_randint / 2)) / scene.window.height
 
         bubble = BubblePriorityCalculator.get(random)
         speed_randint = random.randint(bubble.speedMin, bubble.speedMax)  # size_rand * 50 + 10
 
-        objects.append(self.create_bubble(x + size_randint / 2, y_randint, bubble, batch, size_randint, speed_randint, scene))
+        objects.append(self.create_bubble(scene.window.width - (x + size_randint / 2), y_randint, bubble, batch, size_randint, speed_randint, scene))
 
     def remove_bubble(self, obj: BubbleObject, objects: list, scene):
         if self.bubbleRemoveHook:
@@ -48,7 +48,8 @@ class Map(object):
         self.bubbles.remove(obj)
 
     def create_bubble(self, x, y, bubble, batch, size, speed, scene, attack_mp: Float = None, defence_mp: Float = None):
-        bub = bubble(x, y, self, batch, size, speed)
+        # print(f"SET POS B: {scene.window.width - x, y * scene.window.height}")
+        bub = bubble(scene.window.width - x, y * scene.window.height, self, scene, size, speed)
         if attack_mp is not None:
             bub.attackMultiplier = attack_mp
         if defence_mp is not None:

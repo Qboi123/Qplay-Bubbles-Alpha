@@ -5,7 +5,7 @@ from pyglet.text import Label
 
 from effects import AppliedEffect
 from events import CollisionEvent, UpdateEvent, TickUpdateEvent, DrawEvent, ScoreEvent, PauseEvent, \
-    PlayerCollisionEvent, UnpauseEvent
+    PlayerCollisionEvent, UnpauseEvent, ResizeEvent
 from objects import Collidable
 from resources import Resources
 from sprites.entity import Entity
@@ -80,6 +80,7 @@ class Player(Collidable):
         UpdateEvent.bind(self.update)
         CollisionEvent.bind(self.on_collision)
         TickUpdateEvent.bind(self.tick_update)
+        ResizeEvent.bind(self.on_resize)
 
         # Pause Events
         PauseEvent.bind(self.on_pause)
@@ -146,7 +147,15 @@ class Player(Collidable):
         if not self.pause:
             self.rotation += (degrees * dt * 45) * self.rotationSpeedMultiply
             if not self.dead:
-                self.sprite.update(rotation=self.rotation)
+                self.sprite.update(rotation=self.rotation)\
+
+    def on_resize(self, event: ResizeEvent):
+        y_new = event.height * (self.position.y / event.oldHeight)
+        x_new = event.width - (event.oldWidth - self.position.x)
+
+        # print(f"RESIZE: {x_new, y_new}")
+        self.position.y = y_new
+        self.position.x = x_new
 
     def draw(self, event):
         """
@@ -207,6 +216,7 @@ class Player(Collidable):
                 for effect in self.activeEffects:
                     if effect.dead:
                         self.activeEffects.remove(effect)
+            self.sprite.update(x=self.position.x, y=self.position.y)
 
     def tick_update(self, event):
         pass
@@ -300,7 +310,6 @@ class Player(Collidable):
                     self.position.y = self.sprite.height / 2
                 elif not position.y < self.scene.window.height - self.sprite.height / 2 - 72:
                     self.position.y = self.scene.window.height - self.sprite.height / 2 - 72
-                self.sprite.update(x=self.position.x, y=self.position.y)
 
     def handle_event(self, event):
         """

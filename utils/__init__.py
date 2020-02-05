@@ -20,7 +20,7 @@ PLAYER_SPEED = 2
 
 MIN_BUBBLE_SIZE = 21  # 21
 MAX_BUBBLE_SIZE = 80  # 80
-MAXIMAL_BUBBLES = 100
+MAXIMAL_BUBBLES = 125
 
 ROTATION_SPEED = 5
 MOTION_SPEED = 10
@@ -472,17 +472,23 @@ def createbubble_image(size, inner=None, *colors):
     i = 2
 
     # Drawung ellipses for Bubble.
-    width = 1
+    width = 0.75
+    ex_w = width / 2
     w = width
-    for index in range(0, len(colors)):
-        
-        if index != 0:
-            draw_ellipse(im, (0 + i, 0 + i, size[0] - i, size[0] - i), outline=colors[index], width=w, antialias=8)
-        elif index != len(colors)-1:
-            draw_ellipse(im, (0 + i, 0 + i, size[0] - i, size[0] - i), outline=colors[index], width=w, antialias=8)
-        else:
-            draw_ellipse(im, (0 + i, 0 + i, size[0] - i, size[0] - i), outline=colors[index], width=w, antialias=8)
-        i += 1.5
+    if len(colors) == 1:
+        draw_ellipse(im, (0 + i, 0 + i, size[0] - i, size[0] - i), outline=colors[0], width=w, antialias=4)
+        i += width+ex_w
+        # print("Single circle")
+    else:
+        for index in range(0, len(colors)):
+
+            if len(colors)-1 > index > 0:  # .OOO.
+                draw_ellipse(im, (0 + i, 0 + i, size[0] - i, size[0] - i), outline=colors[index], width=w+ex_w, antialias=4)
+            elif index == len(colors)-1:  # ....O
+                draw_ellipse(im, (0 + i, 0 + i, size[0] - i, size[0] - i), outline=colors[index], width=w, antialias=4)
+            else:  # First:  O....
+                draw_ellipse(im, (0 + i, 0 + i, size[0] - i, size[0] - i), outline=colors[index], width=w+ex_w, antialias=4)
+            i += width+(ex_w*2)
 
     i += 10
 

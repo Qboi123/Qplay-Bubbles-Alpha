@@ -15,6 +15,8 @@ class Entity(Sprite):
         self.damageHook = lambda: None
         self.regenHook = lambda: None
 
+        self.invulnerable = False
+
         self.dead = False
 
         super(Entity, self).__init__(image, x, y, batch=batch, group=group, subpixel=subpixel)
@@ -26,7 +28,7 @@ class Entity(Sprite):
             # self.delete()
 
     def damage(self, atk: Union[Float, Integer]):
-        if not self.dead:
+        if (not self.dead) and not self.invulnerable:
             if float(atk) == 0.0:
                 return
             elif float(atk) < 0.0:
