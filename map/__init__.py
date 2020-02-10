@@ -66,8 +66,8 @@ class Map(object):
 
             speed_randint = scene.random.randint(bubble.speedMin, bubble.speedMax)
             size_randint = scene.random.randint(MIN_BUBBLE_SIZE, MAX_BUBBLE_SIZE)
-            x_randint = scene.random.randint(-int(size_randint / 2), scene.window.width + int(size_randint / 2))
-            y_randint = scene.random.randint(int(size_randint / 2), scene.window.height - 72 - int(size_randint / 2))
+            x_randint = scene.window.width - scene.random.randint(-int(size_randint / 2), scene.window.width + int(size_randint / 2))
+            y_randint = scene.random.randint(int(size_randint / 2), scene.window.height - 72 - int(size_randint / 2)) / scene.window.height
 
             scene.game_objects.append(
                 self.create_bubble(x_randint, y_randint, bubble, scene.batch, size_randint, speed_randint, scene))

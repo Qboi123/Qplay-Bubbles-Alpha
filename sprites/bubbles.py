@@ -11,7 +11,7 @@ class NormalBubble(Bubble):
 
         self.set_unlocalized_name("normal_bubble")
         self.speedMultiplier = 12
-        self.speedMin = 7
+        self.speedMin = 3
         self.speedMax = 16
 
         self.health: Float = 1.5
@@ -36,7 +36,7 @@ class SpeedyBubble(Bubble):
         self.set_unlocalized_name("speedy_bubble")
         self.randomMin = 15000
         self.randomMax = 25000
-        self.speedMin = 32
+        self.speedMin = 16
         self.speedMax = 44
 
         self.health: Float = 1.5
@@ -63,7 +63,7 @@ class KeyBubble(Bubble):
         self.set_unlocalized_name("key_bubble")
         self.randomMin = 15000
         self.randomMax = 25000
-        self.speedMin = 20
+        self.speedMin = 10
         self.speedMax = 30
 
         self.health: Float = 1.5
@@ -86,7 +86,7 @@ class DoubleBubble(Bubble):
         super(DoubleBubble, self).__init__()
 
         self.set_unlocalized_name("double_bubble")
-        self.speedMin = 22
+        self.speedMin = 11
         self.speedMax = 32
 
         self.health: Float = 3.0
@@ -109,8 +109,8 @@ class TripleBubble(Bubble):
         super(TripleBubble, self).__init__()
 
         self.set_unlocalized_name("triple_bubble")
-        self.speedMin = 32
-        self.speedMax = 42
+        self.speedMin = 24
+        self.speedMax = 38
 
         self.health: Float = 4.0
         self.maxHealth: Float = 1.0
@@ -179,8 +179,8 @@ class TripleScoreStatBubble(Bubble):
         super(TripleScoreStatBubble, self).__init__()
 
         self.set_unlocalized_name("triple_state_bubble")
-        self.speedMin = 46
-        self.speedMax = 63
+        self.speedMin = 43
+        self.speedMax = 54
         self.scoreMultiplier = 2
 
         self.health: Float = 2.0
@@ -195,7 +195,7 @@ class TripleScoreStatBubble(Bubble):
         return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
-        event.player.add_effect(EFFECTS.ScoreStatusEffect(event.eventObject.speed / 2.4, 3, event.scene))
+        event.player.add_effect(EFFECTS.ScoreStatusEffect(event.eventObject.speed / 3.6, 3, event.scene))
 
 
 class DecupleScoreStatBubble(Bubble):
@@ -203,8 +203,8 @@ class DecupleScoreStatBubble(Bubble):
         super(DecupleScoreStatBubble, self).__init__()
 
         self.set_unlocalized_name("decuple_state_bubble")
-        self.speedMin = 46
-        self.speedMax = 63
+        self.speedMin = 50
+        self.speedMax = 64
         self.scoreMultiplier = 2
 
         self.health: Float = 2.0
@@ -219,7 +219,7 @@ class DecupleScoreStatBubble(Bubble):
         return BubbleObject(self, x, y, scene, size, speed)
 
     def on_collision(self, event: CollisionEvent):
-        event.player.add_effect(EFFECTS.ScoreStatusEffect(event.eventObject.speed / 2.4, 3, event.scene))
+        event.player.add_effect(EFFECTS.ScoreStatusEffect(event.eventObject.speed / 4.4, 3, event.scene))
 
 
 class DeadlyBubble(Bubble):
@@ -227,8 +227,8 @@ class DeadlyBubble(Bubble):
         super(DeadlyBubble, self).__init__()
 
         self.set_unlocalized_name("kill_bubble")
-        self.speedMin: Integer = 5
-        self.speedMax: Integer = 19
+        self.speedMin: Integer = 2
+        self.speedMax: Integer = 8
 
         self.health: Float = 2.0
         self.maxHealth: Float = 3.0
@@ -251,8 +251,8 @@ class LifeBubble(Bubble):
         super(LifeBubble, self).__init__()
 
         self.set_unlocalized_name("life_bubble")
-        self.speedMin: Integer = 32
-        self.speedMax: Integer = 42
+        self.speedMin: Integer = 24
+        self.speedMax: Integer = 38
 
         self.health: Float = 2.0
         self.maxHealth: Float = 1
@@ -320,8 +320,8 @@ class SlownessBubble(Bubble):
         super(SlownessBubble, self).__init__()
 
         self.set_unlocalized_name("slowness_bubble")
-        self.speedMin: Integer = 3
-        self.speedMax: Integer = 12
+        self.speedMin: Integer = 1
+        self.speedMax: Integer = 8
 
         self.health: Float = 1.5
         self.maxHealth: Float = 1.0
@@ -445,8 +445,8 @@ class ProtectionBubble(Bubble):
         super(ProtectionBubble, self).__init__()
 
         self.set_unlocalized_name("protection_bubble")
-        self.speedMin = 46
-        self.speedMax = 63
+        self.speedMin = 32
+        self.speedMax = 46
         self.scoreMultiplier = 2
 
         self.health: Float = 2.0
