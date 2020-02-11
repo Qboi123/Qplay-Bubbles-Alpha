@@ -10,6 +10,7 @@ from objects import Collidable
 from resources import Resources
 from sprites.entity import Entity
 from typinglib import Bool, Float, Integer, Boolean, Property
+from utils.advBuiltins import AdvFloat, AdvInteger
 from utils.classes import Position2D
 
 
@@ -45,16 +46,16 @@ class Player(Collidable):
                                          width=scene.window.width, color=(255, 127, 127, 255), bold=True)
 
         # Multipliers
-        self.motionSpeedMultiply: Float = 1.0
-        self.rotationSpeedMultiply: Float = 1.0
-        self.scoreMultiply: Integer = 1
+        self.motionSpeedMultiply: AdvFloat = AdvFloat(1.0)
+        self.rotationSpeedMultiply: AdvFloat = AdvFloat(1.0)
+        self.scoreMultiply: AdvInteger = AdvInteger(1)
         self.defenceMultiplier: Property = Property(self.get_defence, self.set_defence)
         self.attackMultiplier: Property = Property(self.get_attack, self.set_attack)
         self.regenMultiplier: Property = Property(self.get_regen, self.set_regen)
 
         # Stats
-        self.score: Integer = 0
-        self.level: Integer = 1
+        self.score: AdvInteger = AdvInteger(0)
+        self.level: AdvInteger = AdvInteger(1)
         self.health: Property = Property(self.get_health, self.set_health)
 
         # Active effects
@@ -64,7 +65,7 @@ class Player(Collidable):
         self.ghostMode: Bool = False
 
         # Position and rotation
-        self.rotation: Float = 0.0
+        self.rotation: AdvFloat = AdvFloat(0.0)
         self.position: Position2D = Position2D(pos)
 
         # Pause variable

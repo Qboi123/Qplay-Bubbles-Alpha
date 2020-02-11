@@ -4,6 +4,7 @@ from pyglet.window import Window
 import utils
 from events import CollisionEvent
 from sprites.entity import Entity
+from utils.advBuiltins import AdvFloat
 
 
 class Collidable(object):
@@ -22,8 +23,8 @@ class Collidable(object):
 
         # Calculate distance between object centers that would be a collision,
         # assuming square resources
-        collision_distance = self.sprite.image.width * 0.5 * self.sprite.scale + other_object.sprite.image.width * 0.5\
-            * other_object.sprite.scale
+        collision_distance = AdvFloat(self.sprite.image.width * 0.5 * self.sprite.scale + other_object.sprite.image.width * 0.5\
+            * other_object.sprite.scale)
 
         # Get distance using position tuples
         actual_distance = utils.distance(self.sprite.position, other_object.sprite.position)

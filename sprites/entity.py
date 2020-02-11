@@ -1,19 +1,20 @@
 from pyglet.sprite import Sprite
 
-from typinglib import Float, Integer, Union
+from typinglib import Float, Integer, Union, Callable
+from utils.advBuiltins import AdvFloat
 
 
 class Entity(Sprite):
     def __init__(self, defence_mp: Float, attack_mp: Float, regen_mp: Float, health: Float, max_health: Float,
                  image, x=0, y=0, batch=None, group=None, subpixel=False):
-        self.defenceMultiplier = defence_mp
-        self.attackMultiplier = attack_mp
-        self.regenMultiplier = regen_mp
-        self.maxHealth = max_health
-        self.health = health
+        self.defenceMultiplier: AdvFloat = AdvFloat(defence_mp)
+        self.attackMultiplier: AdvFloat = AdvFloat(attack_mp)
+        self.regenMultiplier: AdvFloat = AdvFloat(regen_mp)
+        self.maxHealth: AdvFloat = AdvFloat(max_health)
+        self.health: AdvFloat = AdvFloat(health)
 
-        self.damageHook = lambda: None
-        self.regenHook = lambda: None
+        self.damageHook: Callable = lambda: None
+        self.regenHook: Callable = lambda: None
 
         self.invulnerable = False
 
@@ -29,19 +30,19 @@ class Entity(Sprite):
 
     def damage(self, atk: Union[Float, Integer]):
         if (not self.dead) and not self.invulnerable:
-            if float(atk) == 0.0:
+            if AdvFloat(float(atk)).equals(AdvFloat(0.0)):
                 return
             elif float(atk) < 0.0:
                 raise ValueError(f"Damage value can't be under zero, value is '{atk}'")
-            elif float(self.defenceMultiplier) == 0.0:
-                self.health = 0.0
+            elif AdvFloat(float(self.defenceMultiplier)).equals(AdvFloat(0.0)):
+                self.health = AdvFloat(0.0)
             else:
                 # print("Attacked")
                 # print(atk)
                 new_value = self.health - float(atk / self.defenceMultiplier)
                 if float(new_value) < 1.0:
-                    new_value = 0.0
-                self.health = new_value
+                    new_value = AdvFloat(0.0)
+                self.health = AdvFloat(new_value)
             self._check_dead()
 
     def regen(self, value: Union[Float, Integer]):
@@ -50,7 +51,7 @@ class Entity(Sprite):
                 return
             if value < 0.0:
                 raise ValueError(f"Regeneration can't be under zero, value is '{value}'")
-            new_value = self.health + int(value * self.regenMultiplier)
+            new_value = AdvFloat(self.health + int(value * self.regenMultiplier))
             if new_value > self.maxHealth:
-                new_value = self.maxHealth
+                new_value = AdvFloat(self.maxHealth)
             self.health = new_value

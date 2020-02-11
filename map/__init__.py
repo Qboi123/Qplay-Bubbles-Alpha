@@ -6,13 +6,14 @@ from bubble import BubbleObject, BubblePriorityCalculator
 from events import TickUpdateEvent, UpdateEvent, DrawEvent, BubbleRemoveEvent, BubbleCreateEvent
 from typinglib import Float
 from utils import MIN_BUBBLE_SIZE, MAX_BUBBLE_SIZE, MAXIMAL_BUBBLES
+from utils.advBuiltins import AdvFloat
 
 
 class Map(object):
     def __init__(self):
-        self._bubCreateInterval: float = 0.1
-        self._bubCreateTime: float = time() + self._bubCreateInterval
-        self.tick_updates: float = 0
+        self._bubCreateInterval: AdvFloat = AdvFloat(0.1)
+        self._bubCreateTime: AdvFloat = AdvFloat(time() + self._bubCreateInterval)
+        self.tick_updates: AdvFloat = AdvFloat(0.0)
         self.bubbles: List[BubbleObject] = []
         self.bubbleCreationHook: Optional[type] = None
         self.bubbleRemoveHook: Optional[type] = None

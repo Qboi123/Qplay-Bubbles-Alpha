@@ -11,6 +11,7 @@ from PIL import Image, ImageDraw
 from io import BytesIO
 
 from perlin import SimplexNoise
+from utils.advBuiltins import AdvFloat
 
 UPDATE_INTERVAL = 1 / 120
 AUTO_SAVE_INTERVAL = 60
@@ -526,7 +527,7 @@ def pillow2pyglet(im: Image.Image):
 
 def distance(point_1=(0, 0), point_2=(0, 0)):
     """Returns the distance between two points"""
-    return math.sqrt((point_1[0] - point_2[0]) ** 2 + (point_1[1] - point_2[1]) ** 2)
+    return AdvFloat((point_1[0] - point_2[0]) ** 2 + (point_1[1] - point_2[1]) ** 2).sqrt()
 
 
 # fast math algorithms

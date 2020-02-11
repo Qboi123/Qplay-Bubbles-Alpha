@@ -11,25 +11,26 @@ from effects import Effect
 from events import EffectStartedEvent, EffectStoppedEvent, EffectUpdateEvent, DrawEvent, UpdateEvent, PauseEvent, \
     UnpauseEvent, AutoSaveEvent, ResizeEvent
 from resources import Resources
+from utils.advBuiltins import AdvInteger, AdvTuple
 
 
 class EffectGUI(object):
     def __init__(self, scene):
         self.sprites: Dict[Effect, Tuple[Sprite, Sprite, Label]] = dict()
 
-        self.startX = 128
-        self.endX = 1024
-        self.stepX = 64
+        self.startX = AdvInteger(128)
+        self.endX = AdvInteger(1024)
+        self.stepX = AdvInteger(64)
 
-        self.startY = scene.window.height - 40
-        self.endY = scene.window.height - 40 - (self.stepX * (self.endX - self.startX))
-        self.stepY = -32
+        self.startY = AdvInteger(scene.window.height - 40)
+        self.endY = AdvInteger(scene.window.height - 40 - (self.stepX * (self.endX - self.startX)))
+        self.stepY = AdvInteger(-32)
 
         self.currentX = self.startX
         self.currentY = self.startY
 
-        self.fontPaddingX = 32
-        self.fontPaddingY = 8
+        self.fontPaddingX = AdvInteger(32)
+        self.fontPaddingY = AdvInteger(8)
 
         EffectStartedEvent.bind(self.on_effect_started)
         EffectStoppedEvent.bind(self.on_effect_stopped)
@@ -78,7 +79,7 @@ class EffectGUI(object):
 
     def on_effect_update(self, event: EffectUpdateEvent):
         try:
-            self.sprites[event.appliedEffect][2].text = str(int(event.appliedEffect.timeRemaining))
+            self.sprites[event.appliedEffect][2].text = AdvInteger(int(event.appliedEffect.timeRemaining)).to_string()
             self.sprites[event.appliedEffect][2].draw()
         except KeyError:
             pass
@@ -102,7 +103,7 @@ class GameGUI(object):
         ResizeEvent.bind(self.on_resize)
 
     def on_resize(self, event: ResizeEvent):
-        self.sprites["BG"].y = event.height-72
+        self.sprites["BG"].y = AdvInteger(event.height-72)
 
     def on_update(self, event: UpdateEvent):
         pass
@@ -115,27 +116,26 @@ class PauseGUI(object):
     def __init__(self, scene):
         self.sprites: Dict[str, Union[Sprite, Label]] = dict()
 
-        self.startX = 64
-        self.startY = scene.window.height - 128
+        self.startX = AdvInteger(64)
+        self.startY = AdvInteger(scene.window.height - 128)
 
-        self.endY = 40
+        self.endY = AdvInteger(40)
 
         self.currentX = self.startX
         self.currentY = self.startY
 
         PauseEvent.bind(self.on_pause)
-        # DrawEvent.bind(self.on_draw)
         UnpauseEvent.bind(self.on_unpause)
         ResizeEvent.bind(self.on_resize)
 
     def on_pause(self, event: PauseEvent):
         self.oldBgColor = event.scene.backgroundColor
-        event.scene.backgroundColor = (0.05, 0.25, 0.275, 1.0)
+        event.scene.backgroundColor = AdvTuple((0.05, 0.25, 0.275, 1.0))
 
         bg = resource.image("textures/gui/pauseBG.png")
         self.sprites["BG"] = Sprite(bg, 0, 0, batch=event.scene.guiBatch)
-        self.sprites["BG"].scale_x = event.window.width
-        self.sprites["BG"].scale_y = event.window.height-72
+        self.sprites["BG"].scale_x = AdvInteger(event.window.width)
+        self.sprites["BG"].scale_y = AdvInteger(event.window.height-72)
 
         for bubble in sprites.BUBBLES:
             if not bubble.hideInPause:
@@ -148,7 +148,7 @@ class PauseGUI(object):
                 self.currentY -= 48
                 if self.currentY <= self.endY:
                     self.currentY = self.startY
-                    self.currentX += 256
+                    self.currentX += AdvInteger(256)
         AutoSaveEvent(1, event.scene)
 
     def on_resize(self, event: ResizeEvent):
@@ -164,15 +164,15 @@ class PauseGUI(object):
         self.currentX = self.startX
         self.currentY = self.startY
 
-        self.startY = event.height - 128
+        self.startY = AdvInteger(event.height - 128)
 
         self.oldBgColor = event.scene.backgroundColor
-        event.scene.backgroundColor = (0.05, 0.25, 0.275, 1.0)
+        event.scene.backgroundColor = AdvTuple((0.05, 0.25, 0.275, 1.0))
 
         bg = resource.image("textures/gui/pauseBG.png")
         self.sprites["BG"] = Sprite(bg, 0, 0, batch=event.scene.guiBatch)
-        self.sprites["BG"].scale_x = event.width
-        self.sprites["BG"].scale_y = event.height-72
+        self.sprites["BG"].scale_x = AdvInteger(event.width)
+        self.sprites["BG"].scale_y = AdvInteger(event.height-72)
 
         for bubble in sprites.BUBBLES:
             if not bubble.hideInPause:
@@ -185,7 +185,7 @@ class PauseGUI(object):
                 self.currentY -= 48
                 if self.currentY <= self.endY:
                     self.currentY = self.startY
-                    self.currentX += 256
+                    self.currentX += AdvInteger(256)
         # AutoSaveEvent(1, event.scene)
 
     def on_unpause(self, event: UnpauseEvent):
