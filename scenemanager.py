@@ -30,7 +30,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from scenes import GameScene, Scene, LoadingScene
+from scenes import GameScene, Scene, LoadingScene, MapSelectionScene
 from map.savemanager import SaveManager
 
 
@@ -57,8 +57,9 @@ class SceneManager(object):
         # Add the defaults Scenes to the manager
         # self.add_scene(LoadingScene(self.window))
         self.add_scene(GameScene(self.window))
+        self.add_scene(MapSelectionScene(self.window))
         # Activate the Menu Scene
-        self.change_scene("GameScene")
+        self.change_scene("MapSelectionScene")
 
     def add_scene(self, scene_instance):
         """Add a Scene instance to the manager.

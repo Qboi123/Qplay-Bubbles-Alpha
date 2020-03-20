@@ -341,3 +341,20 @@ class LoadingScene(Scene, Resources):
     def update(self, dt):
         if self.loaded:
             self.scene_manager.change_scene("GameScene")
+
+
+class MapSelectionScene(Scene):
+    def __init__(self, window):
+        from glooey.scrolling import ScrollPane
+        self.window = window
+        super(MapSelectionScene, self).__init__()
+
+        self.scrollregion = ScrollPane()
+        self.scrollregion.set_horz_scrolling(True)
+        self.scrollregion.set_view()
+
+    def on_draw(self):
+        self.scrollregion.do_draw()
+
+    def update(self, dt):
+        pass
