@@ -148,8 +148,9 @@ class Player(Collidable):
         """
         if not self.pause:
             self.rotation += (degrees * dt * 45) * self.rotationSpeedMultiply
+            self.rotation = self.rotation % 360
             if not self.dead:
-                self.sprite.update(rotation=self.rotation)\
+                self.sprite.update(rotation=self.rotation)
 
     def on_resize(self, event: ResizeEvent):
         y_new = event.height * (self.position.y / event.oldHeight)
